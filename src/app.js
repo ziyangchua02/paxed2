@@ -18,16 +18,25 @@ export function createApp() {
 
   app.use(
     helmet({
+      crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
           baseUri: ["'self'"],
+          connectSrc: [
+            "'self'",
+            "https://identitytoolkit.googleapis.com",
+            "https://securetoken.googleapis.com",
+            "https://firebaseinstallations.googleapis.com",
+            "https://www.googleapis.com"
+          ],
           fontSrc: ["'self'"],
+          frameSrc: ["'self'", "https://accounts.google.com"],
           formAction: ["'self'"],
           frameAncestors: ["'none'"],
           imgSrc: ["'self'", "data:"],
           objectSrc: ["'none'"],
-          scriptSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://www.gstatic.com"],
           styleSrc: ["'self'"]
         }
       },
