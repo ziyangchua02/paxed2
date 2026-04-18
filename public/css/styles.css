@@ -204,7 +204,7 @@ body.page-ready .page-shell {
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 10px clamp(16px, 2.4vw, 28px);
+  padding: 12px clamp(18px, 2.8vw, 30px);
   background: transparent;
 }
 
@@ -212,10 +212,10 @@ body.page-ready .page-shell {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   width: min(1180px, 100%);
   margin: 0 auto;
-  padding: 8px 11px;
+  padding: 10px 13px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   background: rgba(8, 10, 20, 0.12);
@@ -227,21 +227,21 @@ body.page-ready .page-shell {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   color: rgba(255, 255, 255, 0.96);
   text-decoration: none;
 }
 
 .brand__mark {
   display: grid;
-  grid-template-columns: repeat(2, 6px);
+  grid-template-columns: repeat(2, 7px);
   gap: 3px;
 }
 
 .brand__mark span {
   display: block;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
   background: linear-gradient(135deg, #f8b84b 0%, #f59e0b 100%);
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
@@ -252,8 +252,8 @@ body.page-ready .page-shell {
 
 .brand__wordmark {
   font-family: "DM Mono", "Fira Mono", ui-monospace, monospace;
-  font-size: 0.74rem;
-  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
@@ -261,17 +261,17 @@ body.page-ready .page-shell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 3px;
+  gap: 5px;
+  padding: 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.05);
 }
 
 .site-nav a {
-  padding: 6px 9px;
+  padding: 7px 11px;
   border-radius: 999px;
   color: rgba(255, 255, 255, 0.72);
-  font-size: 0.78rem;
+  font-size: 0.83rem;
   line-height: 1;
   text-decoration: none;
   transition:
@@ -291,14 +291,14 @@ body.page-ready .page-shell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 11px;
+  padding: 8px 13px;
   border: 1px solid transparent;
   border-radius: 999px;
   background: linear-gradient(135deg, #f8b84b 0%, #f59e0b 100%);
   color: #fff;
   text-decoration: none;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   cursor: pointer;
   box-shadow: 0 4px 22px rgba(245, 158, 11, 0.24);
   transition:

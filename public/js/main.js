@@ -31,6 +31,7 @@ function setupFirebaseLogin() {
   let isBusy = false;
   let auth = null;
   let provider = null;
+  let authModule = null;
 
   const renderAuthButton = () => {
     if (isBusy) {
@@ -48,17 +49,18 @@ function setupFirebaseLogin() {
   };
 
   const loadFirebaseAuth = async () => {
-    if (auth && provider) {
-      return { auth, provider };
+    if (auth && provider && authModule) {
+      return { auth, provider, authModule };
     }
 
-    const [{ initializeApp }, authModule] = await Promise.all([
+    const [{ initializeApp }, loadedAuthModule] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
       import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")
     ]);
 
     const app = initializeApp(firebaseConfig);
 
+    authModule = loadedAuthModule;
     auth = authModule.getAuth(app);
     provider = new authModule.GoogleAuthProvider();
 
