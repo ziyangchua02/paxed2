@@ -1,5 +1,3 @@
-import { firebaseConfig } from "./firebase-config.js";
-
 const MIN_LOADER_DURATION_MS = 700;
 const SOFT_COMPLETE_MS = 1800;
 const HARD_COMPLETE_MS = 4000;
@@ -8,12 +6,6 @@ const LOADER_FADE_DURATION_MS = 320;
 
 const clamp01 = (value) => Math.max(0, Math.min(1, value));
 
-function hasFirebaseConfig() {
-  return Object.values(firebaseConfig).every(
-    (value) => typeof value === "string" && value.trim() && !value.startsWith("REPLACE_WITH_")
-  );
-}
-
 function setupFirebaseLogin() {
   const loginButton = document.querySelector("#login-button");
 
@@ -21,96 +13,19 @@ function setupFirebaseLogin() {
     return;
   }
 
-  if (!hasFirebaseConfig()) {
-    loginButton.textContent = "Set Firebase config";
-    loginButton.title = "Update public/js/firebase-config.js with your Firebase project settings.";
+  loginButton.textContent = "Log in";
+  loginButton.title = "Open the authentication page.";
+
+  if (loginButton instanceof HTMLAnchorElement) {
+    loginButton.setAttribute("href", "./auth.html");
     return;
   }
 
-  let currentUser = null;
-  let isBusy = false;
-  let auth = null;
-  let provider = null;
-  let authModule = null;
+  loginButton.disabled = false;
 
-  const renderAuthButton = () => {
-    if (isBusy) {
-      loginButton.textContent = currentUser ? "Signing out..." : "Logging in...";
-      return;
-    }
-
-    if (currentUser) {
-      const label = currentUser.displayName || currentUser.email || "Account";
-      loginButton.textContent = `Sign out (${label})`;
-      return;
-    }
-
-    loginButton.textContent = "Log in";
-  };
-
-  const loadFirebaseAuth = async () => {
-    if (auth && provider && authModule) {
-      return { auth, provider, authModule };
-    }
-
-    const [{ initializeApp }, loadedAuthModule] = await Promise.all([
-      import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
-      import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js")
-    ]);
-
-    const app = initializeApp(firebaseConfig);
-
-    authModule = loadedAuthModule;
-    auth = authModule.getAuth(app);
-    provider = new authModule.GoogleAuthProvider();
-
-    authModule.onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      renderAuthButton();
-    });
-
-    return { auth, provider, authModule };
-  };
-
-  loginButton.addEventListener("click", async () => {
-    if (isBusy) {
-      return;
-    }
-
-    isBusy = true;
-    renderAuthButton();
-
-    try {
-      const { authModule } = await loadFirebaseAuth();
-
-      if (currentUser) {
-        await authModule.signOut(auth);
-      } else {
-        await authModule.signInWithPopup(auth, provider);
-      }
-    } catch (error) {
-      console.error("Firebase authentication failed.", error);
-      const errorCode =
-        typeof error?.code === "string" ? error.code : "unknown-error";
-      const errorMessage =
-        typeof error?.message === "string"
-          ? error.message
-          : "Firebase did not return a readable message.";
-      const errorDetails =
-        error && typeof error === "object" && "customData" in error
-          ? JSON.stringify(error.customData, null, 2)
-          : "No extra details returned.";
-
-      window.alert(
-        `Login failed: ${errorCode}\n${errorMessage}\nDetails: ${errorDetails}`
-      );
-    } finally {
-      isBusy = false;
-      renderAuthButton();
-    }
+  loginButton.addEventListener("click", () => {
+    window.location.assign("./auth.html");
   });
-
-  renderAuthButton();
 }
 
 function setupScrollReveal() {

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="referrer" content="origin" />
+    <title>Paxed | Authentication</title>
+    <meta
+      name="description"
+      content="Sign in to paxed with Google or email/password."
+    />
+    <link rel="stylesheet" href="./css/auth.css" />
+  </head>
+  <body>
+    <div class="auth-shell">
+      <a class="auth-home-link" href="./index.html">&larr; Back to home</a>
+
+      <main class="auth-card" aria-labelledby="auth-title">
+        <p class="auth-eyebrow">Secure access</p>
+        <h1 class="auth-title" id="auth-title">Welcome to paxed</h1>
+
+        <p
+          class="auth-status"
+          id="auth-status"
+          role="status"
+          aria-live="polite"
+        >
+          Initializing authentication...
+        </p>
+
+        <section class="auth-panel" id="auth-panel">
+          <button
+            class="auth-google-button"
+            type="button"
+            id="google-login-button"
+          >
+            Continue with Google
+          </button>
+
+          <div class="auth-separator" aria-hidden="true">or</div>
+
+          <form class="auth-form" id="email-auth-form" novalidate>
+            <label class="auth-label" for="email-input">Email</label>
+            <input
+              class="auth-input"
+              id="email-input"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="you@example.com"
+            />
+
+            <label class="auth-label" for="password-input">Password</label>
+            <input
+              class="auth-input"
+              id="password-input"
+              type="password"
+              autocomplete="current-password"
+              required
+              minlength="6"
+              placeholder="At least 6 characters"
+            />
+
+            <button
+              class="auth-submit-button"
+              type="submit"
+              id="email-submit-button"
+            >
+              Sign in with email
+            </button>
+          </form>
+
+          <div class="auth-secondary-actions">
+            <button
+              class="auth-text-button"
+              type="button"
+              id="switch-mode-button"
+            >
+              Sign Up
+            </button>
+            <button
+              class="auth-text-button"
+              type="button"
+              id="reset-password-button"
+            >
+              Forgot password?
+            </button>
+          </div>
+        </section>
+
+        <section class="auth-account-panel" id="signed-in-panel" hidden>
+          <p class="auth-account-label" id="user-label"></p>
+          <div class="auth-account-actions">
+            <button
+              class="auth-signout-button"
+              type="button"
+              id="sign-out-button"
+            >
+              Sign out
+            </button>
+            <a class="auth-return-link" href="./index.html"
+              >Return to landing page</a
+            >
+          </div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./js/auth.js"></script>
+  </body>
+</html>

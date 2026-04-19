@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="referrer" content="origin" />
+    <title>Paxed | Workspace</title>
+    <meta name="description" content="Signed-in workspace for paxed users." />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="./css/workspace.css" />
+  </head>
+  <body>
+    <header class="workspace-header">
+      <a class="workspace-brand" href="./index.html" aria-label="Paxed home">
+        paxed
+      </a>
+      <button class="workspace-signout" type="button" id="workspace-signout">
+        Sign out
+      </button>
+    </header>
+
+    <main class="workspace-stage" aria-label="Workspace">
+      <div class="workspace-layout">
+        <div
+          id="workspace-map"
+          class="workspace-map"
+          aria-label="Interactive NTU shuttle and bus map"
+        ></div>
+
+        <aside
+          class="workspace-services"
+          id="workspace-services"
+          aria-label="Visible transport services"
+          hidden
+        >
+          <div class="workspace-services__split">
+            <section
+              class="workspace-services__filters"
+              aria-label="Service controls"
+            >
+              <div class="workspace-services__header">
+                <p class="workspace-services__eyebrow">Map filters</p>
+                <h2 class="workspace-services__title">Services</h2>
+              </div>
+
+              <div class="workspace-services__actions">
+                <button
+                  class="workspace-services__action"
+                  type="button"
+                  id="services-show-all"
+                >
+                  Show all
+                </button>
+                <button
+                  class="workspace-services__action"
+                  type="button"
+                  id="services-hide-all"
+                >
+                  Hide all
+                </button>
+              </div>
+
+              <div
+                class="workspace-services__list"
+                id="service-filter-list"
+                role="group"
+                aria-label="Toggle service visibility"
+              ></div>
+            </section>
+
+            <section
+              class="workspace-nearest"
+              id="workspace-nearest"
+              aria-labelledby="workspace-nearest-title"
+            >
+              <div class="workspace-nearest__header">
+                <p class="workspace-nearest__eyebrow">Near map center</p>
+                <h3
+                  class="workspace-nearest__title"
+                  id="workspace-nearest-title"
+                >
+                  Nearest stops
+                </h3>
+              </div>
+
+              <div
+                class="workspace-nearest__list"
+                id="workspace-nearest-list"
+                role="list"
+                aria-label="Nearest stop arrivals by service"
+              ></div>
+            </section>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <p
+      class="workspace-status"
+      id="workspace-status"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <script
+      defer
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script type="module" src="./js/auth-map.js"></script>
+    <script type="module" src="./js/workspace.js"></script>
+  </body>
+</html>
