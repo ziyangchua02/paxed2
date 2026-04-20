@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import helmet from "helmet";
 
+import { registerDriveApiRoutes } from "./drive-api.js";
 import { registerMapApiRoutes } from "./map-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +76,7 @@ export function createApp() {
   });
 
   registerMapApiRoutes(app);
+  registerDriveApiRoutes(app);
 
   app.disable("x-powered-by");
   app.use(express.static(publicDirectory, { extensions: ["html"] }));

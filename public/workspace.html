@@ -22,85 +22,164 @@
       <a class="workspace-brand" href="./index.html" aria-label="Paxed home">
         paxed
       </a>
+      <nav class="workspace-nav" aria-label="Dashboard view">
+        <button
+          class="workspace-nav__item is-active"
+          type="button"
+          id="workspace-view-buses"
+          aria-label="Buses dashboard"
+          aria-pressed="true"
+          title="Buses"
+        >
+          <span class="workspace-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="5.5" width="16" height="11" rx="2.2" />
+              <path d="M7.5 9.3h9M8 16.8v2M16 16.8v2" />
+              <circle cx="8.3" cy="14.2" r="1.1" />
+              <circle cx="15.7" cy="14.2" r="1.1" />
+            </svg>
+          </span>
+        </button>
+        <button
+          class="workspace-nav__item"
+          type="button"
+          id="workspace-view-drive"
+          aria-label="Drive dashboard"
+          aria-pressed="false"
+          title="Drive"
+        >
+          <span class="workspace-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="7.5" />
+              <circle cx="12" cy="12" r="2.4" />
+              <path d="M12 9.6V4.6M9.8 12H4.8M14.2 12h5" />
+            </svg>
+          </span>
+        </button>
+      </nav>
       <button class="workspace-signout" type="button" id="workspace-signout">
         Sign out
       </button>
     </header>
 
     <main class="workspace-stage" aria-label="Workspace">
-      <div class="workspace-layout">
-        <div
-          id="workspace-map"
-          class="workspace-map"
-          aria-label="Interactive NTU shuttle and bus map"
-        ></div>
+      <section
+        class="workspace-view workspace-view--buses"
+        id="workspace-buses"
+        aria-label="Buses workspace"
+      >
+        <div class="workspace-layout">
+          <div
+            id="workspace-map"
+            class="workspace-map"
+            aria-label="Interactive NTU shuttle and bus map"
+          ></div>
 
-        <aside
-          class="workspace-services"
-          id="workspace-services"
-          aria-label="Visible transport services"
-          hidden
-        >
-          <div class="workspace-services__split">
-            <section
-              class="workspace-services__filters"
-              aria-label="Service controls"
-            >
-              <div class="workspace-services__header">
-                <p class="workspace-services__eyebrow">Map filters</p>
-                <h2 class="workspace-services__title">Services</h2>
-              </div>
+          <aside
+            class="workspace-services"
+            id="workspace-services"
+            aria-label="Visible transport services"
+            hidden
+          >
+            <div class="workspace-services__split">
+              <section
+                class="workspace-services__filters"
+                aria-label="Service controls"
+              >
+                <div class="workspace-services__header">
+                  <p class="workspace-services__eyebrow">Map filters</p>
+                  <h2 class="workspace-services__title">Services</h2>
+                </div>
 
-              <div class="workspace-services__actions">
-                <button
-                  class="workspace-services__action"
-                  type="button"
-                  id="services-show-all"
-                >
-                  Show all
-                </button>
-                <button
-                  class="workspace-services__action"
-                  type="button"
-                  id="services-hide-all"
-                >
-                  Hide all
-                </button>
-              </div>
+                <div class="workspace-services__actions">
+                  <button
+                    class="workspace-services__action"
+                    type="button"
+                    id="services-show-all"
+                  >
+                    Show all
+                  </button>
+                  <button
+                    class="workspace-services__action"
+                    type="button"
+                    id="services-hide-all"
+                  >
+                    Hide all
+                  </button>
+                </div>
 
-              <div
-                class="workspace-services__list"
-                id="service-filter-list"
-                role="group"
-                aria-label="Toggle service visibility"
-              ></div>
-            </section>
+                <div
+                  class="workspace-services__list"
+                  id="service-filter-list"
+                  role="group"
+                  aria-label="Toggle service visibility"
+                ></div>
+              </section>
 
-            <section
-              class="workspace-nearest"
-              id="workspace-nearest"
-              aria-labelledby="workspace-nearest-title"
-            >
-              <div class="workspace-nearest__header">
-                <p class="workspace-nearest__eyebrow">Near map center</p>
-                <h3
-                  class="workspace-nearest__title"
-                  id="workspace-nearest-title"
-                >
-                  Nearest stops
-                </h3>
-              </div>
+              <section
+                class="workspace-nearest"
+                id="workspace-nearest"
+                aria-labelledby="workspace-nearest-title"
+              >
+                <div class="workspace-nearest__header">
+                  <p class="workspace-nearest__eyebrow">Near map center</p>
+                  <h3
+                    class="workspace-nearest__title"
+                    id="workspace-nearest-title"
+                  >
+                    Nearest stops
+                  </h3>
+                </div>
 
-              <div
-                class="workspace-nearest__list"
-                id="workspace-nearest-list"
-                role="list"
-                aria-label="Nearest stop arrivals by service"
-              ></div>
-            </section>
-          </div>
-        </aside>
-      </div>
+                <div
+                  class="workspace-nearest__list"
+                  id="workspace-nearest-list"
+                  role="list"
+                  aria-label="Nearest stop arrivals by service"
+                ></div>
+              </section>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section
+        class="workspace-view workspace-view--drive workspace-drive"
+        id="workspace-drive"
+        aria-label="Drive workspace"
+        hidden
+      >
+        <div class="workspace-layout workspace-layout--drive">
+          <div
+            id="workspace-drive-map"
+            class="workspace-map workspace-map--drive"
+            aria-label="Interactive Singapore carpark map"
+          ></div>
+
+          <aside
+            class="workspace-services workspace-services--drive"
+            id="workspace-drive-panel"
+            aria-label="Nearby carparks"
+          >
+            <div class="workspace-services__header">
+              <p
+                class="workspace-services__eyebrow"
+                id="workspace-drive-eyebrow"
+              >
+                Near map center
+              </p>
+              <h2 class="workspace-services__title">Carparks</h2>
+            </div>
+
+            <div
+              class="workspace-nearest__list workspace-drive__list"
+              id="workspace-drive-list"
+              role="list"
+              aria-label="Nearby carparks with lot availability and parking price"
+            ></div>
+          </aside>
+        </div>
+      </section>
     </main>
 
     <p
@@ -118,5 +197,6 @@
     ></script>
     <script type="module" src="./js/auth-map.js"></script>
     <script type="module" src="./js/workspace.js"></script>
+    <script type="module" src="./js/drive-map.js"></script>
   </body>
 </html>

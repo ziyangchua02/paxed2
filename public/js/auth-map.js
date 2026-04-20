@@ -14,6 +14,7 @@ let stopLayerGroup = null;
 let vehicleLayerGroup = null;
 let vehicleMarkers = new Map();
 let refreshTimerId = 0;
+let isVehicleLoopActive = false;
 let routeDataset = null;
 let latestVehicles = [];
 let visibleServices = new Set();
@@ -1261,14 +1262,39 @@ const setupServicePanel = () => {
 };
 
 const startVehicleLoop = () => {
+  if (isVehicleLoopActive) {
+    return;
+  }
+
+  isVehicleLoopActive = true;
+
   const scheduleNext = () => {
+    if (!isVehicleLoopActive) {
+      return;
+    }
+
     refreshTimerId = window.setTimeout(async () => {
+      if (!isVehicleLoopActive) {
+        return;
+      }
+
       await refreshVehicles();
       scheduleNext();
     }, VEHICLE_REFRESH_INTERVAL_MS);
   };
 
-  void refreshVehicles().then(scheduleNext);
+  void refreshVehicles().then(() => {
+    if (!isVehicleLoopActive) {
+      return;
+    }
+
+    scheduleNext();
+  });
+};
+
+const stopVehicleLoop = () => {
+  isVehicleLoopActive = false;
+  window.clearTimeout(refreshTimerId);
 };
 
 const resolveMapContainerId = () => {
@@ -1331,5 +1357,27 @@ const bootstrapMap = async () => {
   }
 };
 
+const handleWorkspaceViewChange = (event) => {
+  const viewName = event?.detail?.viewName;
+
+  if (viewName === "drive") {
+    stopVehicleLoop();
+    return;
+  }
+
+  if (viewName === "buses") {
+    startVehicleLoop();
+
+    if (map?.invalidateSize) {
+      window.setTimeout(() => {
+        map.invalidateSize();
+      }, 90);
+    }
+
+    scheduleNearestStopsPanelRender(90);
+  }
+};
+
 setupServicePanel();
+window.addEventListener("workspace:viewchange", handleWorkspaceViewChange);
 bootstrapMap();

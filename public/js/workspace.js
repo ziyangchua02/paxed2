@@ -2,6 +2,10 @@ import { firebaseConfig } from "./firebase-config.js";
 
 const signOutButton = document.querySelector("#workspace-signout");
 const statusElement = document.querySelector("#workspace-status");
+const busesViewButton = document.querySelector("#workspace-view-buses");
+const driveViewButton = document.querySelector("#workspace-view-drive");
+const busDashboardElement = document.querySelector("#workspace-buses");
+const driveDashboardElement = document.querySelector("#workspace-drive");
 
 const AUTH_PAGE_PATH = "./auth.html";
 
@@ -24,6 +28,61 @@ const hasFirebaseConfig = () =>
 
 const redirectToAuthPage = () => {
   window.location.replace(AUTH_PAGE_PATH);
+};
+
+const setDashboardView = (viewName = "buses") => {
+  const isBusView = viewName === "buses";
+
+  if (busDashboardElement) {
+    busDashboardElement.hidden = !isBusView;
+  }
+
+  if (driveDashboardElement) {
+    driveDashboardElement.hidden = isBusView;
+  }
+
+  if (busesViewButton) {
+    busesViewButton.classList.toggle("is-active", isBusView);
+    busesViewButton.setAttribute("aria-pressed", String(isBusView));
+  }
+
+  if (driveViewButton) {
+    driveViewButton.classList.toggle("is-active", !isBusView);
+    driveViewButton.setAttribute("aria-pressed", String(!isBusView));
+  }
+
+  document.body.classList.toggle("is-bus-view", isBusView);
+  document.body.classList.toggle("is-drive-view", !isBusView);
+
+  setStatus("");
+
+  window.dispatchEvent(
+    new CustomEvent("workspace:viewchange", {
+      detail: {
+        viewName: isBusView ? "buses" : "drive"
+      }
+    })
+  );
+
+  window.setTimeout(() => {
+    window.dispatchEvent(new Event("resize"));
+  }, 120);
+};
+
+const setupDashboardViewSwitcher = () => {
+  if (!busesViewButton || !driveViewButton) {
+    return;
+  }
+
+  busesViewButton.addEventListener("click", () => {
+    setDashboardView("buses");
+  });
+
+  driveViewButton.addEventListener("click", () => {
+    setDashboardView("drive");
+  });
+
+  setDashboardView("buses");
 };
 
 const setupAuthStateGuard = () => {
@@ -79,6 +138,7 @@ const bootstrap = async () => {
     authModule = loadedAuthModule;
     auth = authModule.getAuth(app);
 
+    setupDashboardViewSwitcher();
     setupSignOut();
     setupAuthStateGuard();
   } catch (error) {
