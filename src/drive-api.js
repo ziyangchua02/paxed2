@@ -1,8 +1,8 @@
 import * as svy21 from "svy21";
 
 const SG_CENTER = {
-  lat: 1.3521,
-  lng: 103.8198
+  lat: 1.3483,
+  lng: 103.6831
 };
 
 const DATAGOV_CARPARK_AVAILABILITY_URL = "https://api.data.gov.sg/v1/transport/carpark-availability";
@@ -19,6 +19,7 @@ const DRIVE_AVAILABILITY_CACHE_TTL_MS = Number(
 const DRIVE_DEFAULT_RADIUS_METERS = Number(process.env.DRIVE_DEFAULT_RADIUS_METERS || 2500);
 const DRIVE_DEFAULT_LIMIT = Number(process.env.DRIVE_DEFAULT_LIMIT || 120);
 const DRIVE_MAX_LIMIT = 220;
+const DRIVE_RADIUS_EXPANSION_STEPS = [4_000, 6_000, 9_000, 12_000, 16_000, 20_000];
 const HDB_CARPARK_PAGE_SIZE = Number(process.env.HDB_CARPARK_PAGE_SIZE || 3000);
 const DRIVE_UPSTREAM_RETRY_COUNT = Number(process.env.DRIVE_UPSTREAM_RETRY_COUNT || 2);
 const DRIVE_UPSTREAM_RETRY_DELAY_MS = Number(process.env.DRIVE_UPSTREAM_RETRY_DELAY_MS || 350);
@@ -62,7 +63,7 @@ export function registerDriveApiRoutes(app) {
     try {
       const referenceLat = parseQueryFloat(req.query.lat, SG_CENTER.lat);
       const referenceLng = parseQueryFloat(req.query.lng, SG_CENTER.lng);
-      const radiusMeters = clampNumber(
+      const requestedRadiusMeters = clampNumber(
         parseQueryFloat(req.query.radius, DRIVE_DEFAULT_RADIUS_METERS),
         300,
         12_000
@@ -103,14 +104,40 @@ export function registerDriveApiRoutes(app) {
         })
         .sort((left, right) => left.distanceMeters - right.distanceMeters);
 
-      const withinRadiusCarparks = sortedCarparks.filter(
-        (carpark) => carpark.distanceMeters <= radiusMeters
+      const withinRequestedRadiusCarparks = sortedCarparks.filter(
+        (carpark) => carpark.distanceMeters <= requestedRadiusMeters
       );
-      const shouldUseNearestFallback = !withinRadiusCarparks.length;
-      const selectedCarparks = (shouldUseNearestFallback ? sortedCarparks : withinRadiusCarparks).slice(
-        0,
-        limit
-      );
+
+      let effectiveRadiusMeters = requestedRadiusMeters;
+      let nearbyCarparks = withinRequestedRadiusCarparks;
+      let searchMode = "within-radius";
+
+      if (!nearbyCarparks.length) {
+        for (const radiusStep of DRIVE_RADIUS_EXPANSION_STEPS) {
+          if (radiusStep <= effectiveRadiusMeters) {
+            continue;
+          }
+
+          const candidates = sortedCarparks.filter(
+            (carpark) => carpark.distanceMeters <= radiusStep
+          );
+
+          if (!candidates.length) {
+            continue;
+          }
+
+          effectiveRadiusMeters = radiusStep;
+          nearbyCarparks = candidates;
+          searchMode = "radius-expanded";
+          break;
+        }
+      }
+
+      if (!nearbyCarparks.length) {
+        searchMode = "nearest-fallback";
+      }
+
+      const selectedCarparks = (nearbyCarparks.length ? nearbyCarparks : sortedCarparks).slice(0, limit);
 
       res.json({
         updatedAt: availabilityPayload.updatedAt,
@@ -118,10 +145,11 @@ export function registerDriveApiRoutes(app) {
           lat: referenceLat,
           lng: referenceLng
         },
-        radiusMeters,
+        requestedRadiusMeters,
+        radiusMeters: effectiveRadiusMeters,
         limit,
-        searchMode: shouldUseNearestFallback ? "nearest-fallback" : "within-radius",
-        withinRadiusCount: withinRadiusCarparks.length,
+        searchMode,
+        withinRadiusCount: withinRequestedRadiusCarparks.length,
         count: selectedCarparks.length,
         carparks: selectedCarparks
       });
@@ -239,9 +267,9 @@ function normalizeCarparkMetadata(record) {
     return null;
   }
 
-  const convertedCoordinates = svy21.svy21ToWgs84(xCoord, yCoord);
-  const lat = Number(convertedCoordinates?.[0]);
-  const lng = Number(convertedCoordinates?.[1]);
+  const convertedCoordinates = convertSvy21Coordinates(xCoord, yCoord);
+  const lat = Number(convertedCoordinates?.lat);
+  const lng = Number(convertedCoordinates?.lng);
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return null;
@@ -262,6 +290,43 @@ function normalizeCarparkMetadata(record) {
     gantryHeight: String(record?.gantry_height || "").trim() || null,
     basement: String(record?.car_park_basement || "N").trim().toUpperCase() === "Y"
   };
+}
+
+function convertSvy21Coordinates(easting, northing) {
+  // HDB carpark metadata uses x_coord as Easting and y_coord as Northing.
+  const preferred = toLatLngTuple(svy21.svy21ToWgs84(northing, easting));
+  const fallback = toLatLngTuple(svy21.svy21ToWgs84(easting, northing));
+
+  const preferredIsInSingapore = isLikelySingaporeCoordinate(preferred);
+  const fallbackIsInSingapore = isLikelySingaporeCoordinate(fallback);
+
+  if (preferredIsInSingapore) {
+    return preferred;
+  }
+
+  if (fallbackIsInSingapore) {
+    return fallback;
+  }
+
+  return preferred;
+}
+
+function toLatLngTuple(tuple) {
+  return {
+    lat: Number(tuple?.[0]),
+    lng: Number(tuple?.[1])
+  };
+}
+
+function isLikelySingaporeCoordinate(coordinate) {
+  return (
+    Number.isFinite(coordinate?.lat) &&
+    Number.isFinite(coordinate?.lng) &&
+    coordinate.lat >= 1.15 &&
+    coordinate.lat <= 1.5 &&
+    coordinate.lng >= 103.55 &&
+    coordinate.lng <= 104.1
+  );
 }
 
 async function getCarparkAvailability() {

@@ -3,7 +3,7 @@ const DRIVE_SECTION_ID = "workspace-drive";
 const DRIVE_LIST_ID = "workspace-drive-list";
 const DRIVE_REFERENCE_LABEL_ID = "workspace-drive-eyebrow";
 const DRIVE_REFRESH_INTERVAL_MS = 30_000;
-const DRIVE_DEFAULT_CENTER = [1.3521, 103.8198];
+const DRIVE_DEFAULT_CENTER = [1.3483, 103.6831];
 const DRIVE_DEFAULT_ZOOM = 14.2;
 const DRIVE_DEFAULT_RADIUS_METERS = 2_500;
 const DRIVE_DEFAULT_LIMIT = 140;
@@ -204,6 +204,14 @@ const setReferenceLabel = (source, searchMode = "within-radius") => {
     return;
   }
 
+  if (searchMode === "radius-expanded") {
+    driveReferenceLabelElement.textContent =
+      source === "user-location"
+        ? "Near your location (wider search)"
+        : "Near map center (wider search)";
+    return;
+  }
+
   if (searchMode === "nearest-fallback") {
     driveReferenceLabelElement.textContent = "Closest in Singapore";
     return;
@@ -295,20 +303,17 @@ const requestUserLocation = () => {
   );
 };
 
-const createCarparkIcon = (carpark) => {
+const createCarparkMarkerStyle = (carpark) => {
   const tone = getAvailabilityTone(carpark?.availability);
 
-  return window.L.divIcon({
-    className: "",
-    html: `
-      <span class="map-carpark-pin" style="--carpark-tone: ${tone.color}" aria-hidden="true">
-        <span class="map-carpark-pin__core"></span>
-      </span>
-    `,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-    popupAnchor: [0, -8]
-  });
+  return {
+    radius: 7,
+    color: tone.color,
+    weight: 2,
+    fillColor: tone.color,
+    fillOpacity: 0.3,
+    opacity: 0.95
+  };
 };
 
 const createCarparkPopupContent = (carpark) => {
@@ -377,6 +382,14 @@ const renderDriveList = (
         </p>
       `
       : "";
+  const expandedNoticeMarkup =
+    searchMode === "radius-expanded"
+      ? `
+        <p class="workspace-drive__notice">
+          Expanded search to ${(radiusMeters / 1_000).toFixed(1)} km to find nearby carparks.
+        </p>
+      `
+      : "";
   const reconnectNoticeMarkup = noticeText
     ? `
       <p class="workspace-drive__notice workspace-drive__notice--sync">
@@ -415,7 +428,7 @@ const renderDriveList = (
     })
     .join("");
 
-  driveListElement.innerHTML = `${reconnectNoticeMarkup}${fallbackNoticeMarkup}${markup}`;
+  driveListElement.innerHTML = `${reconnectNoticeMarkup}${expandedNoticeMarkup}${fallbackNoticeMarkup}${markup}`;
 };
 
 const syncDriveMarkers = (carparks) => {
@@ -436,11 +449,7 @@ const syncDriveMarkers = (carparks) => {
     let marker = driveMarkersByCarparkNo.get(markerId);
 
     if (!marker) {
-      marker = window.L.marker(latLng, {
-        icon: createCarparkIcon(carpark),
-        keyboard: false,
-        zIndexOffset: 760
-      })
+      marker = window.L.circleMarker(latLng, createCarparkMarkerStyle(carpark))
         .bindPopup(createCarparkPopupContent(carpark), {
           maxWidth: 380,
           closeButton: false
@@ -448,7 +457,7 @@ const syncDriveMarkers = (carparks) => {
         .addTo(driveCarparkLayerGroup);
     } else {
       marker.setLatLng(latLng);
-      marker.setIcon(createCarparkIcon(carpark));
+      marker.setStyle(createCarparkMarkerStyle(carpark));
       marker.setPopupContent(createCarparkPopupContent(carpark));
     }
 
@@ -550,6 +559,20 @@ const stopDriveRefresh = () => {
   window.clearTimeout(driveRefreshTimerId);
 };
 
+const resyncDriveMapLayout = () => {
+  if (!driveMap) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    driveMap?.invalidateSize();
+  });
+
+  window.setTimeout(() => {
+    driveMap?.invalidateSize();
+  }, 120);
+};
+
 const setupDriveListInteraction = () => {
   if (!driveListElement) {
     return;
@@ -585,7 +608,7 @@ const initializeDriveMap = async () => {
   }
 
   if (driveMapInitialized && driveMap) {
-    driveMap.invalidateSize();
+    resyncDriveMapLayout();
     await refreshDriveDashboard();
     scheduleDriveRefresh();
     return;
@@ -615,6 +638,7 @@ const initializeDriveMap = async () => {
     setupDriveListInteraction();
     requestUserLocation();
     driveMapInitialized = true;
+    resyncDriveMapLayout();
 
     await refreshDriveDashboard();
     scheduleDriveRefresh();
@@ -637,7 +661,11 @@ const handleWorkspaceViewChange = (event) => {
     return;
   }
 
-  void initializeDriveMap();
+  requestUserLocation();
+
+  void initializeDriveMap().then(() => {
+    resyncDriveMapLayout();
+  });
 };
 
 window.addEventListener("workspace:viewchange", handleWorkspaceViewChange);
