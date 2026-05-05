@@ -83,6 +83,16 @@ test("GET /api/drive/health returns drive API status", async () => {
   assert.equal(typeof payload.defaults?.radiusMeters, "number");
 });
 
+test("GET /api/weather/health returns weather API status", async () => {
+  const response = await fetch(`${baseUrl}/api/weather/health`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.country, "SG");
+  assert.equal(typeof payload.defaults?.cacheTtlMs, "number");
+});
+
 test("GET / sends the expected security headers", async () => {
   const response = await fetch(baseUrl);
 

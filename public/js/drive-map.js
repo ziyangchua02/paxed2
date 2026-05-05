@@ -2,6 +2,7 @@ const DRIVE_MAP_CONTAINER_ID = "workspace-drive-map";
 const DRIVE_SECTION_ID = "workspace-drive";
 const DRIVE_LIST_ID = "workspace-drive-list";
 const DRIVE_REFERENCE_LABEL_ID = "workspace-drive-eyebrow";
+const DRIVE_DETAILS_ID = "workspace-drive-details";
 const DRIVE_REFRESH_INTERVAL_MS = 30_000;
 const DRIVE_DEFAULT_CENTER = [1.3483, 103.6831];
 const DRIVE_DEFAULT_ZOOM = 14.2;
@@ -14,6 +15,7 @@ const USER_LOCATION_TIMEOUT_MS = 9_000;
 const driveSectionElement = document.querySelector(`#${DRIVE_SECTION_ID}`);
 const driveListElement = document.querySelector(`#${DRIVE_LIST_ID}`);
 const driveReferenceLabelElement = document.querySelector(`#${DRIVE_REFERENCE_LABEL_ID}`);
+const driveDetailsElement = document.querySelector(`#${DRIVE_DETAILS_ID}`);
 
 let driveMap = null;
 let driveCarparkLayerGroup = null;
@@ -25,6 +27,8 @@ let driveMapInitialized = false;
 let driveHasCenteredOnUserLocation = false;
 let driveUserLocation = null;
 let driveMarkersByCarparkNo = new Map();
+let driveCarparksByCarparkNo = new Map();
+let driveSelectedCarparkNo = "";
 let driveLastSuccessfulState = null;
 
 const waitForLeaflet = (timeoutMs = 10_000) => {
@@ -316,7 +320,7 @@ const createCarparkMarkerStyle = (carpark) => {
   };
 };
 
-const createCarparkPopupContent = (carpark) => {
+const createDriveDetailsMarkup = (carpark) => {
   const title = escapeHtml(carpark?.address || carpark?.carparkNo || "Carpark");
   const subtitle = escapeHtml(carpark?.carparkNo || "");
   const availabilityLabel = getAvailabilityLabel(carpark?.availability);
@@ -328,31 +332,74 @@ const createCarparkPopupContent = (carpark) => {
   );
 
   return `
-    <article class="map-stop-sheet">
-      <div class="map-stop-sheet__header">
-        <div class="map-stop-sheet__title-block">
-          <h3 class="map-stop-sheet__title">${title}</h3>
-          <p class="map-stop-sheet__subtitle">${subtitle}</p>
-        </div>
-      </div>
-      <div class="map-stop-sheet__cards">
-        <section class="map-stop-sheet__card">
-          <div class="map-stop-sheet__card-header">
-            <span class="map-stop-sheet__mini-chip">Lots</span>
-            <span class="map-stop-sheet__card-title">${escapeHtml(availabilityLabel)}</span>
-          </div>
-          <p class="map-stop-sheet__message">${updatedLabel} Lot type: ${lotType}.</p>
-        </section>
-        <section class="map-stop-sheet__card">
-          <div class="map-stop-sheet__card-header">
-            <span class="map-stop-sheet__mini-chip">Price</span>
-            <span class="map-stop-sheet__card-title">${priceLabel}</span>
-          </div>
-          <p class="map-stop-sheet__message">${priceNotes}</p>
-        </section>
-      </div>
-    </article>
+    <div class="workspace-drive-details__header">
+      <h3 class="workspace-drive-details__title">${title}</h3>
+      <p class="workspace-drive-details__subtitle">${subtitle}</p>
+    </div>
+    <div class="workspace-drive-details__metrics">
+      <section class="workspace-drive-details__metric">
+        <span class="workspace-drive-details__metric-label">Lots</span>
+        <span class="workspace-drive-details__metric-value">${escapeHtml(availabilityLabel)}</span>
+        <span class="workspace-drive-details__metric-value">${updatedLabel} Lot type: ${lotType}.</span>
+      </section>
+      <section class="workspace-drive-details__metric">
+        <span class="workspace-drive-details__metric-label">Price</span>
+        <span class="workspace-drive-details__metric-value">${priceLabel}</span>
+        <span class="workspace-drive-details__metric-value">${priceNotes}</span>
+      </section>
+    </div>
   `;
+};
+
+const renderDriveDetails = (carpark = null) => {
+  if (!driveDetailsElement) {
+    return;
+  }
+
+  if (!carpark) {
+    driveDetailsElement.innerHTML = `
+      <p class="workspace-drive-details__empty">
+        Select a carpark on the map or from the nearby list to view details.
+      </p>
+    `;
+    return;
+  }
+
+  driveDetailsElement.innerHTML = createDriveDetailsMarkup(carpark);
+};
+
+const focusCarparkSelection = (carparkNo, { centerMap = true } = {}) => {
+  const markerId = String(carparkNo || "").trim();
+
+  if (!markerId) {
+    return;
+  }
+
+  const marker = driveMarkersByCarparkNo.get(markerId);
+  const carpark = driveCarparksByCarparkNo.get(markerId);
+
+  driveSelectedCarparkNo = markerId;
+  renderDriveDetails(carpark || null);
+
+  if (!driveListElement) {
+    return;
+  }
+
+  const allCards = driveListElement.querySelectorAll("[data-carpark-no]");
+
+  allCards.forEach((cardElement) => {
+    const isSelected = cardElement.dataset.carparkNo === markerId;
+    cardElement.classList.toggle("is-selected", isSelected);
+  });
+
+  if (centerMap && driveMap && marker) {
+    const markerPosition = marker.getLatLng();
+
+    driveMap.setView(markerPosition, Math.max(Number(driveMap.getZoom()) || 0, 16), {
+      animate: true,
+      duration: 0.45
+    });
+  }
 };
 
 const renderDriveList = (
@@ -368,6 +415,8 @@ const renderDriveList = (
   }
 
   if (!Array.isArray(carparks) || !carparks.length) {
+    driveSelectedCarparkNo = "";
+    renderDriveDetails(null);
     driveListElement.innerHTML = `
       <p class="workspace-drive__empty">No nearby carparks were found for this map view. Move the map or zoom out to search again.</p>
     `;
@@ -405,12 +454,14 @@ const renderDriveList = (
       const availabilityLabel = getAvailabilityLabel(carpark?.availability);
       const distanceLabel = formatDistanceLabel(carpark?.distanceMeters);
       const parkingType = escapeHtml(carpark?.carparkType || "Carpark");
-      const carparkNo = escapeHtml(carpark?.carparkNo || "");
+      const rawCarparkNo = String(carpark?.carparkNo || "");
+      const carparkNo = escapeHtml(rawCarparkNo);
       const address = escapeHtml(carpark?.address || "Address unavailable");
       const priceLabel = escapeHtml(carpark?.priceLabel || "Price unavailable");
+      const selectedClass = rawCarparkNo && rawCarparkNo === driveSelectedCarparkNo ? " is-selected" : "";
 
       return `
-        <article class="workspace-nearest-card workspace-drive-card" role="listitem" data-carpark-no="${carparkNo}">
+        <article class="workspace-nearest-card workspace-drive-card${selectedClass}" role="listitem" data-carpark-no="${carparkNo}">
           <div class="workspace-nearest-card__header">
             <span class="workspace-nearest-card__service">${carparkNo}</span>
             <span class="workspace-nearest-card__distance">${escapeHtml(distanceLabel)}</span>
@@ -437,6 +488,7 @@ const syncDriveMarkers = (carparks) => {
   }
 
   const nextMarkers = new Map();
+  const nextCarparkLookup = new Map();
 
   for (const carpark of carparks) {
     if (!Number.isFinite(carpark?.lat) || !Number.isFinite(carpark?.lng) || !carpark?.carparkNo) {
@@ -449,19 +501,21 @@ const syncDriveMarkers = (carparks) => {
     let marker = driveMarkersByCarparkNo.get(markerId);
 
     if (!marker) {
-      marker = window.L.circleMarker(latLng, createCarparkMarkerStyle(carpark))
-        .bindPopup(createCarparkPopupContent(carpark), {
-          maxWidth: 380,
-          closeButton: false
-        })
-        .addTo(driveCarparkLayerGroup);
+      marker = window.L.circleMarker(latLng, createCarparkMarkerStyle(carpark)).addTo(
+        driveCarparkLayerGroup
+      );
+      marker.on("click", () => {
+        focusCarparkSelection(markerId, {
+          centerMap: false
+        });
+      });
     } else {
       marker.setLatLng(latLng);
       marker.setStyle(createCarparkMarkerStyle(carpark));
-      marker.setPopupContent(createCarparkPopupContent(carpark));
     }
 
     nextMarkers.set(markerId, marker);
+    nextCarparkLookup.set(markerId, carpark);
   }
 
   for (const [markerId, marker] of driveMarkersByCarparkNo.entries()) {
@@ -473,6 +527,14 @@ const syncDriveMarkers = (carparks) => {
   }
 
   driveMarkersByCarparkNo = nextMarkers;
+  driveCarparksByCarparkNo = nextCarparkLookup;
+
+  if (driveSelectedCarparkNo && !driveCarparksByCarparkNo.has(driveSelectedCarparkNo)) {
+    driveSelectedCarparkNo = "";
+    renderDriveDetails(null);
+  } else if (driveSelectedCarparkNo) {
+    renderDriveDetails(driveCarparksByCarparkNo.get(driveSelectedCarparkNo) || null);
+  }
 };
 
 const refreshDriveDashboard = async () => {
@@ -586,19 +648,13 @@ const setupDriveListInteraction = () => {
     }
 
     const markerId = listCard.dataset.carparkNo;
-    const marker = markerId ? driveMarkersByCarparkNo.get(markerId) : null;
-
-    if (!marker) {
+    if (!markerId) {
       return;
     }
 
-    const markerPosition = marker.getLatLng();
-
-    driveMap.setView(markerPosition, Math.max(Number(driveMap.getZoom()) || 0, 16), {
-      animate: true,
-      duration: 0.45
+    focusCarparkSelection(markerId, {
+      centerMap: true
     });
-    marker.openPopup();
   });
 };
 

@@ -56,6 +56,21 @@
             </svg>
           </span>
         </button>
+        <button
+          class="workspace-nav__item"
+          type="button"
+          id="workspace-view-weather"
+          aria-label="Weather dashboard"
+          aria-pressed="false"
+          title="Weather"
+        >
+          <span class="workspace-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M6.5 16.2h9.8a3.3 3.3 0 1 0-.7-6.5 4.7 4.7 0 0 0-9 .9A2.9 2.9 0 0 0 6.5 16.2Z" />
+              <path d="M5.5 19.2h7.8M15.3 19.2h3.2" />
+            </svg>
+          </span>
+        </button>
       </nav>
       <button class="workspace-signout" type="button" id="workspace-signout">
         Sign out
@@ -85,58 +100,88 @@
               <section
                 class="workspace-services__filters"
                 aria-label="Service controls"
+                data-mobile-collapsible
               >
                 <div class="workspace-services__header">
-                  <p class="workspace-services__eyebrow">Map filters</p>
-                  <h2 class="workspace-services__title">Services</h2>
-                </div>
-
-                <div class="workspace-services__actions">
+                  <div class="workspace-panel-heading">
+                    <p class="workspace-services__eyebrow">Map filters</p>
+                    <h2 class="workspace-services__title">Services</h2>
+                  </div>
                   <button
-                    class="workspace-services__action"
+                    class="workspace-panel-toggle"
                     type="button"
-                    id="services-show-all"
+                    data-mobile-panel-toggle
+                    data-panel-content-id="workspace-services-content"
+                    aria-controls="workspace-services-content"
+                    aria-expanded="true"
                   >
-                    Show all
-                  </button>
-                  <button
-                    class="workspace-services__action"
-                    type="button"
-                    id="services-hide-all"
-                  >
-                    Hide all
+                    Hide
                   </button>
                 </div>
 
-                <div
-                  class="workspace-services__list"
-                  id="service-filter-list"
-                  role="group"
-                  aria-label="Toggle service visibility"
-                ></div>
+                <div class="workspace-panel-content" id="workspace-services-content">
+                  <div class="workspace-services__actions">
+                    <button
+                      class="workspace-services__action"
+                      type="button"
+                      id="services-show-all"
+                    >
+                      Show all
+                    </button>
+                    <button
+                      class="workspace-services__action"
+                      type="button"
+                      id="services-hide-all"
+                    >
+                      Hide all
+                    </button>
+                  </div>
+
+                  <div
+                    class="workspace-services__list"
+                    id="service-filter-list"
+                    role="group"
+                    aria-label="Toggle service visibility"
+                  ></div>
+                </div>
               </section>
 
               <section
                 class="workspace-nearest"
                 id="workspace-nearest"
                 aria-labelledby="workspace-nearest-title"
+                data-mobile-collapsible
               >
                 <div class="workspace-nearest__header">
-                  <p class="workspace-nearest__eyebrow">Near map center</p>
-                  <h3
-                    class="workspace-nearest__title"
-                    id="workspace-nearest-title"
+                  <div class="workspace-panel-heading">
+                    <p class="workspace-nearest__eyebrow">Near map center</p>
+                    <h3
+                      class="workspace-nearest__title"
+                      id="workspace-nearest-title"
+                    >
+                      Nearest stops
+                    </h3>
+                  </div>
+                  <button
+                    class="workspace-panel-toggle"
+                    type="button"
+                    data-mobile-panel-toggle
+                    data-panel-content-id="workspace-nearest-content"
+                    aria-controls="workspace-nearest-content"
+                    aria-expanded="true"
                   >
-                    Nearest stops
-                  </h3>
+                    Hide
+                  </button>
                 </div>
 
-                <div
-                  class="workspace-nearest__list"
-                  id="workspace-nearest-list"
-                  role="list"
-                  aria-label="Nearest stop arrivals by service"
-                ></div>
+                <div class="workspace-panel-content workspace-nearest__content" id="workspace-nearest-content">
+                  <div
+                    class="workspace-nearest__list"
+                    id="workspace-nearest-list"
+                    role="list"
+                    aria-label="Nearest stop arrivals by service"
+                  ></div>
+                </div>
               </section>
             </div>
           </aside>
@@ -177,7 +222,111 @@
               role="list"
               aria-label="Nearby carparks with lot availability and parking price"
             ></div>
+
+            <section
+              class="workspace-drive-details"
+              id="workspace-drive-details"
+              aria-live="polite"
+              aria-label="Selected carpark details"
+            >
+              <p class="workspace-drive-details__empty">
+                Select a carpark on the map or from the nearby list to view details.
+              </p>
+            </section>
           </aside>
+        </div>
+      </section>
+
+      <section
+        class="workspace-view workspace-view--weather workspace-weather"
+        id="workspace-weather"
+        aria-label="Weather workspace"
+        hidden
+      >
+        <div class="workspace-weather__layout">
+          <section
+            class="workspace-weather-showcase"
+            id="workspace-weather-showcase"
+            aria-label="Current and upcoming weather"
+          >
+            <article class="workspace-weather-now">
+              <p class="workspace-weather-now__eyebrow" id="workspace-weather-eyebrow">
+                Detecting location...
+              </p>
+              <p class="workspace-weather-now__temp" id="workspace-weather-now-temp">
+                --<span>°C</span>
+              </p>
+              <p class="workspace-weather-now__condition" id="workspace-weather-now-condition">
+                Loading weather...
+              </p>
+              <p class="workspace-weather-now__location" id="workspace-weather-now-location">
+                Singapore
+              </p>
+            </article>
+
+            <div
+              class="workspace-weather-forecast-cards"
+              id="workspace-weather-forecast-cards"
+              role="list"
+              aria-label="Upcoming weather cards"
+            ></div>
+
+            <article class="workspace-weather-showcase__status">
+              <p class="workspace-weather-showcase__status-label">Forecast Window</p>
+              <p class="workspace-weather-showcase__status-value" id="workspace-weather-meta">
+                Loading forecast window...
+              </p>
+              <p
+                class="workspace-weather-showcase__status-updated"
+                id="workspace-weather-updated"
+              >
+                Loading weather feed...
+              </p>
+            </article>
+          </section>
+
+          <section
+            class="workspace-weather-highlights"
+            aria-labelledby="workspace-weather-highlights-title"
+          >
+            <header class="workspace-weather-highlights__header">
+              <h3
+                class="workspace-weather-highlights__title"
+                id="workspace-weather-highlights-title"
+              >
+                Today's Highlights
+              </h3>
+            </header>
+
+            <section
+              class="workspace-weather__metrics"
+              id="workspace-weather-metrics"
+              role="list"
+              aria-label="Weather highlights"
+            ></section>
+          </section>
+
+          <section
+            class="workspace-weather-trend"
+            aria-labelledby="workspace-weather-trend-title"
+          >
+            <div class="workspace-weather-trend__header">
+              <h3 class="workspace-weather-trend__title" id="workspace-weather-trend-title">
+                Today Temperature Outlook
+              </h3>
+              <p class="workspace-weather-trend__sub" id="workspace-weather-trend-sub">
+                Estimated from current forecast range
+              </p>
+            </div>
+
+            <div
+              class="workspace-weather-trend__chart"
+              id="workspace-weather-trend-chart"
+              aria-label="Temperature outlook curve"
+            ></div>
+          </section>
+
+          <p class="workspace-weather__notice" id="workspace-weather-notice" hidden></p>
         </div>
       </section>
     </main>
@@ -198,5 +347,6 @@
     <script type="module" src="./js/auth-map.js"></script>
     <script type="module" src="./js/workspace.js"></script>
     <script type="module" src="./js/drive-map.js"></script>
+    <script type="module" src="./js/weather-dashboard.js"></script>
   </body>
 </html>

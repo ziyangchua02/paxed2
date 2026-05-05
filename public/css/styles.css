@@ -149,12 +149,20 @@ body.page-ready .page-shell {
   transform: translateX(-26px) scale(0.985);
 }
 
+.use-cases .scroll-reveal.scroll-reveal--card.is-visible {
+  transform: translateY(0) scale(1);
+}
+
 .platform-section .scroll-reveal.scroll-reveal--card {
   transform: translateY(24px) scale(0.96);
 }
 
 .hardware-section .scroll-reveal.scroll-reveal--card {
   transform: translateX(26px) scale(0.985);
+}
+
+.hardware-section .scroll-reveal.scroll-reveal--card.is-visible {
+  transform: translateY(0) scale(1);
 }
 
 .pricing-section .scroll-reveal.scroll-reveal--card {
@@ -331,6 +339,22 @@ body.page-ready .page-shell {
 
   .site-nav a {
     white-space: nowrap;
+  }
+}
+
+@media (max-width: 680px) {
+  .site-header {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    border-radius: 999px;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .button--header {
+    margin-left: auto;
   }
 }
 
@@ -717,9 +741,11 @@ body {
   .use-cases__grid {
     grid-template-columns: 1fr;
     gap: 16px;
+    justify-items: center;
   }
 
   .use-case-card {
+    width: min(520px, 100%);
     min-height: auto;
     padding: 24px 22px;
   }
@@ -1154,6 +1180,14 @@ body {
 
   .hardware-section__title {
     font-size: clamp(1.8rem, 9vw, 2.6rem);
+  }
+
+  .hardware-section__grid {
+    justify-items: center;
+  }
+
+  .hardware-card {
+    width: min(520px, 100%);
   }
 }
 

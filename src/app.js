@@ -6,6 +6,7 @@ import helmet from "helmet";
 
 import { registerDriveApiRoutes } from "./drive-api.js";
 import { registerMapApiRoutes } from "./map-api.js";
+import { registerWeatherApiRoutes } from "./weather-api.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,6 +78,7 @@ export function createApp() {
 
   registerMapApiRoutes(app);
   registerDriveApiRoutes(app);
+  registerWeatherApiRoutes(app);
 
   app.disable("x-powered-by");
   app.use(express.static(publicDirectory, { extensions: ["html"] }));

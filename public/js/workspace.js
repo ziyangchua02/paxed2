@@ -4,8 +4,11 @@ const signOutButton = document.querySelector("#workspace-signout");
 const statusElement = document.querySelector("#workspace-status");
 const busesViewButton = document.querySelector("#workspace-view-buses");
 const driveViewButton = document.querySelector("#workspace-view-drive");
+const weatherViewButton = document.querySelector("#workspace-view-weather");
 const busDashboardElement = document.querySelector("#workspace-buses");
 const driveDashboardElement = document.querySelector("#workspace-drive");
+const weatherDashboardElement = document.querySelector("#workspace-weather");
+const mobilePanelQuery = window.matchMedia("(max-width: 680px)");
 
 const AUTH_PAGE_PATH = "./auth.html";
 
@@ -31,14 +34,22 @@ const redirectToAuthPage = () => {
 };
 
 const setDashboardView = (viewName = "buses") => {
-  const isBusView = viewName === "buses";
+  const normalizedViewName =
+    viewName === "drive" || viewName === "weather" ? viewName : "buses";
+  const isBusView = normalizedViewName === "buses";
+  const isDriveView = normalizedViewName === "drive";
+  const isWeatherView = normalizedViewName === "weather";
 
   if (busDashboardElement) {
     busDashboardElement.hidden = !isBusView;
   }
 
   if (driveDashboardElement) {
-    driveDashboardElement.hidden = isBusView;
+    driveDashboardElement.hidden = !isDriveView;
+  }
+
+  if (weatherDashboardElement) {
+    weatherDashboardElement.hidden = !isWeatherView;
   }
 
   if (busesViewButton) {
@@ -47,19 +58,25 @@ const setDashboardView = (viewName = "buses") => {
   }
 
   if (driveViewButton) {
-    driveViewButton.classList.toggle("is-active", !isBusView);
-    driveViewButton.setAttribute("aria-pressed", String(!isBusView));
+    driveViewButton.classList.toggle("is-active", isDriveView);
+    driveViewButton.setAttribute("aria-pressed", String(isDriveView));
+  }
+
+  if (weatherViewButton) {
+    weatherViewButton.classList.toggle("is-active", isWeatherView);
+    weatherViewButton.setAttribute("aria-pressed", String(isWeatherView));
   }
 
   document.body.classList.toggle("is-bus-view", isBusView);
-  document.body.classList.toggle("is-drive-view", !isBusView);
+  document.body.classList.toggle("is-drive-view", isDriveView);
+  document.body.classList.toggle("is-weather-view", isWeatherView);
 
   setStatus("");
 
   window.dispatchEvent(
     new CustomEvent("workspace:viewchange", {
       detail: {
-        viewName: isBusView ? "buses" : "drive"
+        viewName: normalizedViewName
       }
     })
   );
@@ -70,7 +87,7 @@ const setDashboardView = (viewName = "buses") => {
 };
 
 const setupDashboardViewSwitcher = () => {
-  if (!busesViewButton || !driveViewButton) {
+  if (!busesViewButton || !driveViewButton || !weatherViewButton) {
     return;
   }
 
@@ -80,6 +97,10 @@ const setupDashboardViewSwitcher = () => {
 
   driveViewButton.addEventListener("click", () => {
     setDashboardView("drive");
+  });
+
+  weatherViewButton.addEventListener("click", () => {
+    setDashboardView("weather");
   });
 
   setDashboardView("buses");
@@ -116,10 +137,89 @@ const setupSignOut = () => {
   });
 };
 
+const setupMobilePanelToggles = () => {
+  const collapsibleSections = [
+    ...document.querySelectorAll("[data-mobile-collapsible]")
+  ];
+
+  if (!collapsibleSections.length) {
+    return;
+  }
+
+  const setSectionExpanded = (section, expanded) => {
+    const toggleButton = section.querySelector("[data-mobile-panel-toggle]");
+    const contentId = toggleButton?.getAttribute("data-panel-content-id");
+    const contentElement = contentId ? document.getElementById(contentId) : null;
+
+    section.classList.toggle("is-collapsed", !expanded);
+
+    if (toggleButton) {
+      toggleButton.setAttribute("aria-expanded", String(expanded));
+      toggleButton.textContent = expanded ? "Hide" : "Show";
+    }
+
+    if (contentElement) {
+      contentElement.hidden = !expanded;
+    }
+  };
+
+  const syncPanelState = () => {
+    if (!mobilePanelQuery.matches) {
+      collapsibleSections.forEach((section) => {
+        setSectionExpanded(section, true);
+      });
+      return;
+    }
+
+    const defaultSection =
+      collapsibleSections.find((section) => section.id === "workspace-nearest") ||
+      collapsibleSections[0];
+
+    collapsibleSections.forEach((section, index) => {
+      setSectionExpanded(section, section === defaultSection || (!defaultSection && index === 0));
+    });
+  };
+
+  collapsibleSections.forEach((section) => {
+    const toggleButton = section.querySelector("[data-mobile-panel-toggle]");
+
+    if (!toggleButton) {
+      return;
+    }
+
+    toggleButton.addEventListener("click", () => {
+      if (!mobilePanelQuery.matches) {
+        return;
+      }
+
+      const isExpanded = toggleButton.getAttribute("aria-expanded") === "true";
+
+      if (isExpanded) {
+        setSectionExpanded(section, false);
+        return;
+      }
+
+      collapsibleSections.forEach((panelSection) => {
+        setSectionExpanded(panelSection, panelSection === section);
+      });
+    });
+  });
+
+  if (typeof mobilePanelQuery.addEventListener === "function") {
+    mobilePanelQuery.addEventListener("change", syncPanelState);
+  } else {
+    mobilePanelQuery.addListener(syncPanelState);
+  }
+
+  syncPanelState();
+};
+
 const bootstrap = async () => {
   if (!signOutButton) {
     return;
   }
+
+  setupMobilePanelToggles();
 
   if (!hasFirebaseConfig()) {
     setStatus("Firebase config missing. Returning to auth page.", "error");

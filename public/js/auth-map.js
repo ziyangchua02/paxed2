@@ -7,12 +7,14 @@ const MAX_HEADING_MATCH_DISTANCE_METERS = 220;
 const MIN_HEADING_MOVEMENT_METERS = 6;
 const USER_LOCATION_MAX_AGE_MS = 60_000;
 const USER_LOCATION_TIMEOUT_MS = 9_000;
+const INITIAL_VISIBLE_SERVICE_LIMIT = 2;
 
 let map = null;
 let routeLayerGroup = null;
 let stopLayerGroup = null;
 let vehicleLayerGroup = null;
 let vehicleMarkers = new Map();
+const stopMarkersByCode = new Map();
 let refreshTimerId = 0;
 let isVehicleLoopActive = false;
 let routeDataset = null;
@@ -27,6 +29,9 @@ let userLocationLayerGroup = null;
 let userLocationMarker = null;
 let userLocation = null;
 let hasCenteredOnUserLocation = false;
+let hasAppliedInitialNearestServiceSelection = false;
+let hasUserAdjustedServiceVisibility = false;
+let hasBoundNearestStopCardInteractions = false;
 
 const servicePanelElement = document.querySelector("#workspace-services");
 const serviceFilterListElement = document.querySelector("#service-filter-list");
@@ -76,6 +81,7 @@ const fetchJson = async (url) => {
 };
 
 const createVehicleIcon = (vehicle) => {
+  const useCompactBusView = document.body.classList.contains("is-bus-view");
   const label = String(vehicle.serviceNo || "?");
   const heading = Number.isFinite(vehicle?.displayBearing)
     ? normalizeBearing(vehicle.displayBearing).toFixed(1)
@@ -109,8 +115,8 @@ const createVehicleIcon = (vehicle) => {
         </span>
       </span>
     `,
-    iconSize: [62, 34],
-    iconAnchor: [31, 27],
+    iconSize: useCompactBusView ? [56, 31] : [62, 34],
+    iconAnchor: useCompactBusView ? [28, 25] : [31, 27],
     popupAnchor: [0, -20]
   });
 };
@@ -241,6 +247,10 @@ const updateUserLocation = (position, { centerMap = false } = {}) => {
     });
   }
 
+  applyInitialNearestServiceSelection(getMapReferenceCenter(), {
+    allowRefresh: true,
+    syncMap: true
+  });
   scheduleNearestStopsPanelRender();
 };
 
@@ -345,6 +355,54 @@ const getNearestStopForService = (serviceNo, referenceCenter) => {
     : null;
 };
 
+const getNearestServiceSummaries = (referenceCenter) =>
+  getAvailableServiceEntries()
+    .map(([serviceNo, service], index) => ({
+      serviceNo,
+      service,
+      nearestStop: getNearestStopForService(serviceNo, referenceCenter),
+      index
+    }))
+    .sort((a, b) => {
+      const aDistance = Number.isFinite(a.nearestStop?.distanceMeters)
+        ? a.nearestStop.distanceMeters
+        : Number.POSITIVE_INFINITY;
+      const bDistance = Number.isFinite(b.nearestStop?.distanceMeters)
+        ? b.nearestStop.distanceMeters
+        : Number.POSITIVE_INFINITY;
+
+      return aDistance - bDistance || a.index - b.index;
+    });
+
+const applyInitialNearestServiceSelection = (
+  referenceCenter,
+  { allowRefresh = false, syncMap = false } = {}
+) => {
+  if (
+    !routeDataset ||
+    hasUserAdjustedServiceVisibility ||
+    (hasAppliedInitialNearestServiceSelection && !allowRefresh)
+  ) {
+    return;
+  }
+
+  const nearestServiceNos = getNearestServiceSummaries(referenceCenter)
+    .filter((summary) => summary.nearestStop)
+    .slice(0, INITIAL_VISIBLE_SERVICE_LIMIT)
+    .map((summary) => summary.serviceNo);
+
+  if (!nearestServiceNos.length) {
+    return;
+  }
+
+  visibleServices = new Set(nearestServiceNos);
+  hasAppliedInitialNearestServiceSelection = true;
+
+  if (syncMap && routeLayerGroup && stopLayerGroup && vehicleLayerGroup) {
+    applyVisibleServices();
+  }
+};
+
 const formatDistanceLabel = (distanceMeters) => {
   if (!Number.isFinite(distanceMeters)) {
     return "Distance unavailable";
@@ -443,11 +501,7 @@ const renderNearestStopsPanel = async () => {
   const requestSequence = ++nearestStopsRenderSequence;
   const referenceCenter = getMapReferenceCenter();
   setNearestStopsReferenceLabel(referenceCenter.source);
-  const serviceSummaries = getAvailableServiceEntries().map(([serviceNo, service]) => ({
-    serviceNo,
-    service,
-    nearestStop: getNearestStopForService(serviceNo, referenceCenter)
-  }));
+  const serviceSummaries = getNearestServiceSummaries(referenceCenter);
   const uniqueStopCodes = Array.from(
     new Set(serviceSummaries.map((summary) => summary.nearestStop?.code).filter(Boolean))
   );
@@ -476,6 +530,7 @@ const renderNearestStopsPanel = async () => {
   const markup = serviceSummaries
     .map(({ serviceNo, service, nearestStop }) => {
       const serviceToneClass = getServiceToneClass(serviceNo);
+      const isInteractive = isServiceVisible(serviceNo) && Boolean(nearestStop?.code);
       const shortLabel = escapeHtml(service?.shortLabel || serviceNo);
       const stopName = escapeHtml(nearestStop?.name || "No mapped stop");
       const roadName = escapeHtml(nearestStop?.roadName || "");
@@ -486,9 +541,21 @@ const renderNearestStopsPanel = async () => {
       const servicePayload = Array.isArray(stopPayload?.services)
         ? stopPayload.services.find((entry) => String(entry?.serviceNo) === String(serviceNo))
         : null;
+      const stopCode = escapeHtml(nearestStop?.code || "");
+      const stopLat = Number.isFinite(nearestStop?.lat) ? String(nearestStop.lat) : "";
+      const stopLng = Number.isFinite(nearestStop?.lng) ? String(nearestStop.lng) : "";
+      const interactiveClass = isInteractive ? "workspace-nearest-card--interactive" : "";
 
       return `
-        <article class="workspace-nearest-card ${serviceToneClass}" role="listitem">
+        <article
+          class="workspace-nearest-card ${interactiveClass} ${serviceToneClass}"
+          role="listitem"
+          tabindex="${isInteractive ? "0" : "-1"}"
+          data-interactive="${isInteractive ? "true" : "false"}"
+          data-stop-code="${stopCode}"
+          data-stop-lat="${stopLat}"
+          data-stop-lng="${stopLng}"
+        >
           <div class="workspace-nearest-card__header">
             <span class="workspace-nearest-card__service ${serviceToneClass}">${shortLabel}</span>
             <span class="workspace-nearest-card__distance">${escapeHtml(distanceLabel)}</span>
@@ -504,6 +571,90 @@ const renderNearestStopsPanel = async () => {
     .join("");
 
   nearestStopsListElement.innerHTML = markup;
+};
+
+const focusStopFromNearestCard = (cardElement) => {
+  if (!map || !cardElement) {
+    return;
+  }
+
+  if (String(cardElement.dataset.interactive || "false") !== "true") {
+    return;
+  }
+
+  const stopCode = String(cardElement.dataset.stopCode || "").trim();
+  const stopMarker = stopCode ? stopMarkersByCode.get(stopCode) : null;
+  const markerLatLng = stopMarker?.getLatLng?.();
+
+  const fallbackLat = Number(cardElement.dataset.stopLat);
+  const fallbackLng = Number(cardElement.dataset.stopLng);
+
+  const targetLat = Number.isFinite(markerLatLng?.lat)
+    ? markerLatLng.lat
+    : Number.isFinite(fallbackLat)
+      ? fallbackLat
+      : null;
+  const targetLng = Number.isFinite(markerLatLng?.lng)
+    ? markerLatLng.lng
+    : Number.isFinite(fallbackLng)
+      ? fallbackLng
+      : null;
+
+  if (!Number.isFinite(targetLat) || !Number.isFinite(targetLng)) {
+    return;
+  }
+
+  map.flyTo([targetLat, targetLng], Math.max(Number(map.getZoom()) || INITIAL_ZOOM, 16), {
+    animate: true,
+    duration: 0.65
+  });
+
+  if (stopMarker?.openPopup) {
+    window.setTimeout(() => {
+      stopMarker.openPopup();
+    }, 260);
+  }
+};
+
+const setupNearestStopsPanelInteractions = () => {
+  if (!nearestStopsListElement || hasBoundNearestStopCardInteractions) {
+    return;
+  }
+
+  hasBoundNearestStopCardInteractions = true;
+
+  nearestStopsListElement.addEventListener("click", (event) => {
+    const targetCard = event.target?.closest?.(".workspace-nearest-card[data-stop-code]");
+
+    if (!(targetCard instanceof HTMLElement)) {
+      return;
+    }
+
+    if (String(targetCard.dataset.interactive || "false") !== "true") {
+      return;
+    }
+
+    focusStopFromNearestCard(targetCard);
+  });
+
+  nearestStopsListElement.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    const targetCard = event.target?.closest?.(".workspace-nearest-card[data-stop-code]");
+
+    if (!(targetCard instanceof HTMLElement)) {
+      return;
+    }
+
+    if (String(targetCard.dataset.interactive || "false") !== "true") {
+      return;
+    }
+
+    event.preventDefault();
+    focusStopFromNearestCard(targetCard);
+  });
 };
 
 const scheduleNearestStopsPanelRender = (delayMs = 0) => {
@@ -962,8 +1113,8 @@ const createStopIcon = (stop) =>
   window.L.divIcon({
     className: "",
     html: createStopMarkerSvg(getStopServiceColors(stop)),
-    iconSize: [14, 14],
-    iconAnchor: [7, 7]
+    iconSize: document.body.classList.contains("is-bus-view") ? [12, 12] : [14, 14],
+    iconAnchor: document.body.classList.contains("is-bus-view") ? [6, 6] : [7, 7]
   });
 
 const fetchStopArrivals = async (stopCode) => {
@@ -1006,6 +1157,7 @@ const fetchStopArrivals = async (stopCode) => {
 const drawRoutes = (dataset) => {
   routeLayerGroup.clearLayers();
   stopLayerGroup.clearLayers();
+  stopMarkersByCode.clear();
 
   for (const [serviceNo, service] of Object.entries(dataset.services || {})) {
     if (!isServiceVisible(serviceNo)) {
@@ -1151,6 +1303,14 @@ const drawRoutes = (dataset) => {
       }
     });
 
+    for (const code of cluster.codes) {
+      if (!code) {
+        continue;
+      }
+
+      stopMarkersByCode.set(String(code), stopMarker);
+    }
+
     stopMarker.addTo(stopLayerGroup);
   }
 };
@@ -1229,11 +1389,13 @@ const setupServicePanel = () => {
   }
 
   showAllServicesButton?.addEventListener("click", () => {
+    hasUserAdjustedServiceVisibility = true;
     visibleServices = new Set(getAvailableServiceEntries().map(([serviceNo]) => serviceNo));
     applyVisibleServices();
   });
 
   hideAllServicesButton?.addEventListener("click", () => {
+    hasUserAdjustedServiceVisibility = true;
     visibleServices = new Set();
     applyVisibleServices();
   });
@@ -1250,6 +1412,8 @@ const setupServicePanel = () => {
     if (!serviceNo) {
       return;
     }
+
+    hasUserAdjustedServiceVisibility = true;
 
     if (input.checked) {
       visibleServices.add(serviceNo);
@@ -1343,6 +1507,8 @@ const bootstrapMap = async () => {
     vehicleLayerGroup = L.layerGroup().addTo(map);
     userLocationLayerGroup = L.layerGroup().addTo(map);
 
+    applyInitialNearestServiceSelection(getMapReferenceCenter());
+
     map.on("moveend", () => {
       scheduleNearestStopsPanelRender(180);
     });
@@ -1360,24 +1526,23 @@ const bootstrapMap = async () => {
 const handleWorkspaceViewChange = (event) => {
   const viewName = event?.detail?.viewName;
 
-  if (viewName === "drive") {
+  if (viewName !== "buses") {
     stopVehicleLoop();
     return;
   }
 
-  if (viewName === "buses") {
-    startVehicleLoop();
+  startVehicleLoop();
 
-    if (map?.invalidateSize) {
-      window.setTimeout(() => {
-        map.invalidateSize();
-      }, 90);
-    }
-
-    scheduleNearestStopsPanelRender(90);
+  if (map?.invalidateSize) {
+    window.setTimeout(() => {
+      map.invalidateSize();
+    }, 90);
   }
+
+  scheduleNearestStopsPanelRender(90);
 };
 
 setupServicePanel();
+setupNearestStopsPanelInteractions();
 window.addEventListener("workspace:viewchange", handleWorkspaceViewChange);
 bootstrapMap();
