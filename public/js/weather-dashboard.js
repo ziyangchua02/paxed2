@@ -243,7 +243,7 @@ const setWeatherReferenceLabel = (source) => {
   }
 
   weatherReferenceElement.textContent =
-    source === "user-location" ? "Location detected" : "Using Singapore default";
+    source === "user-location" ? "Live near you" : "Singapore default";
 };
 
 const setWeatherNotice = (message = "") => {
@@ -574,9 +574,9 @@ const renderHighlights = (payload) => {
     }),
     renderHighlightCard({
       icon: "rain",
-      title: "Rain Forecast",
+      title: "Rain Outlook",
       value: rainForecastText,
-      meta: `${Number(payload?.overview?.rainingAreas) || 0} areas expecting rain`,
+      meta: `${Number(payload?.overview?.rainingAreas) || 0} areas flagged`,
       toneClass: getForecastToneClass(rainForecastText)
     }),
     renderHighlightCard({
@@ -833,10 +833,10 @@ const renderTemperatureTrend = (payload) => {
       <svg
         class="workspace-weather-trend-svg"
         viewBox="0 0 ${dynamicChartWidth} ${chartHeight}"
+        width="${dynamicChartWidth}"
         role="img"
         aria-label="Temperature outlook"
         preserveAspectRatio="xMinYMid meet"
-        style="width: ${dynamicChartWidth}px"
       >
       <defs>
         <linearGradient id="weather-trend-fill" x1="0" y1="0" x2="0" y2="1">
@@ -855,7 +855,7 @@ const renderTemperatureTrend = (payload) => {
   `;
 
   if (weatherTrendSubElement) {
-    weatherTrendSubElement.textContent = `Next ${WEATHER_TREND_LOOKAHEAD_HOURS}h at ${intervalMinutes}-min intervals from ${formatTimeLabel(
+    weatherTrendSubElement.textContent = `Next ${WEATHER_TREND_LOOKAHEAD_HOURS}h from ${formatTimeLabel(
       startMs
     )}. Estimated range ${formatNumber(Math.min(...values), 0)}° to ${formatNumber(
       Math.max(...values),

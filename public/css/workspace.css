@@ -4233,3 +4233,604 @@ body.is-libraries-view .workspace-stage {
     grid-auto-rows: 238px;
   }
 }
+
+/* Final Weather visual refresh. Keep after legacy dashboard rules. */
+body.is-weather-view {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(144, 97, 249, 0.3), transparent 34%),
+    linear-gradient(180deg, #261241 0%, #11091f 42%, #050507 100%);
+}
+
+body.is-weather-view .workspace-stage {
+  padding: 104px 18px 24px;
+}
+
+.workspace-weather {
+  width: min(1080px, 100%);
+}
+
+.workspace-weather__layout {
+  display: grid;
+  grid-template-columns: minmax(290px, 0.92fr) minmax(0, 1.18fr);
+  grid-template-rows: 76px minmax(238px, 0.76fr) minmax(0, 1fr);
+  gap: 18px 20px;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.workspace-weather__layout::before,
+.workspace-weather__layout::after {
+  display: none;
+}
+
+.workspace-weather__header {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(238px, 300px);
+  gap: 20px;
+  min-height: 0;
+}
+
+.workspace-weather__heading,
+.workspace-weather-showcase__status,
+.workspace-weather-now,
+.workspace-weather-forecast-panel,
+.workspace-weather-highlight-card,
+.workspace-weather-trend {
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(11, 7, 18, 0.98), rgba(4, 4, 8, 0.99)),
+    #050507;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.workspace-weather__heading,
+.workspace-weather-showcase__status {
+  align-content: center;
+  min-height: 0;
+  padding: 14px 16px 12px;
+}
+
+.workspace-weather__heading {
+  gap: 4px;
+}
+
+.workspace-weather__title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 1.38rem;
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.workspace-weather__subtitle {
+  max-width: 640px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.7rem;
+  line-height: 1.32;
+  letter-spacing: 0;
+}
+
+.workspace-weather-now__eyebrow,
+.workspace-weather-showcase__status-label,
+.workspace-weather-highlight-card__title {
+  margin: 0;
+  color: rgba(216, 180, 254, 0.82);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 0.56rem;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.workspace-weather-showcase__status {
+  display: grid;
+  gap: 5px;
+}
+
+.workspace-weather-showcase__status-value {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.workspace-weather-showcase__status-updated,
+.workspace-weather-forecast-panel__header span,
+.workspace-weather-trend__sub {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.64rem;
+  line-height: 1.28;
+  letter-spacing: 0;
+}
+
+.workspace-weather-showcase {
+  grid-column: 1;
+  grid-row: 2 / 4;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 220px minmax(0, 1fr);
+  gap: 18px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.workspace-weather-now {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: 0;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.workspace-weather-now::before {
+  display: none;
+}
+
+.workspace-weather-now__glyph,
+.workspace-weather-now__copy {
+  position: relative;
+  z-index: 1;
+}
+
+.workspace-weather-now__glyph {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(168, 85, 247, 0.13);
+  color: rgba(216, 180, 254, 0.96);
+}
+
+.workspace-weather-now__glyph svg {
+  width: 58px;
+  height: 58px;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.workspace-weather-now__copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.workspace-weather-now__label {
+  width: fit-content;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.16);
+  color: rgba(237, 233, 254, 0.94);
+  font-size: 0.58rem;
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workspace-weather-now__temp {
+  color: rgba(255, 255, 255, 0.96);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 3.28rem;
+  font-weight: 690;
+  line-height: 0.88;
+  letter-spacing: 0;
+}
+
+.workspace-weather-now__temp span {
+  font-size: 0.42em;
+  vertical-align: 1em;
+}
+
+.workspace-weather-now__condition {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.96rem;
+  font-weight: 640;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.workspace-weather-now__location {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.66rem;
+  line-height: 1.32;
+  letter-spacing: 0;
+}
+
+.workspace-weather-forecast-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  padding: 12px;
+}
+
+.workspace-weather-forecast-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workspace-weather-forecast-panel__header h2,
+.workspace-weather-highlights__title,
+.workspace-weather-trend__title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.93);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.workspace-weather-forecast-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+}
+
+.workspace-weather-forecast-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: none;
+}
+
+.workspace-weather-forecast-card__icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: rgba(168, 85, 247, 0.12);
+  color: rgba(216, 180, 254, 0.92);
+}
+
+.workspace-weather-forecast-card__icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.workspace-weather-forecast-card.tone-rain .workspace-weather-forecast-card__icon,
+.workspace-weather-forecast-card.tone-thunder .workspace-weather-forecast-card__icon {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.12);
+}
+
+.workspace-weather-forecast-card.tone-clear .workspace-weather-forecast-card__icon {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.workspace-weather-forecast-card__copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.workspace-weather-forecast-card__day {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.68rem;
+  font-weight: 690;
+  line-height: 1.15;
+}
+
+.workspace-weather-forecast-card__condition,
+.workspace-weather-forecast-card__date {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.58rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-weather-forecast-card__temp {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.72rem;
+  font-weight: 720;
+  text-align: right;
+}
+
+.workspace-weather-highlights {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+  padding: 12px;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(11, 7, 18, 0.98), rgba(4, 4, 8, 0.99)),
+    #050507;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.workspace-weather-highlights__header {
+  padding: 0;
+}
+
+.workspace-weather__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+}
+
+.workspace-weather-highlight-card {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 4px;
+  min-height: 0;
+  padding: 9px 10px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.workspace-weather-highlight-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.workspace-weather-highlight-card__icon {
+  order: 2;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  padding: 6px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(168, 85, 247, 0.12);
+  color: rgba(216, 180, 254, 0.9);
+}
+
+.workspace-weather-highlight-card__icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.workspace-weather-highlight-card__head > div {
+  min-width: 0;
+}
+
+.workspace-weather-highlight-card__meta {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  display: -webkit-box;
+  font-size: 0.56rem;
+  line-height: 1.22;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.workspace-weather-highlight-card__value {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  display: -webkit-box;
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 690;
+  line-height: 1.08;
+  letter-spacing: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.workspace-weather-highlight-card.tone-rain .workspace-weather-highlight-card__icon,
+.workspace-weather-highlight-card.tone-thunder .workspace-weather-highlight-card__icon,
+.workspace-weather-highlight-card.tone-wind .workspace-weather-highlight-card__icon {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.12);
+}
+
+.workspace-weather-highlight-card.tone-temperature .workspace-weather-highlight-card__icon,
+.workspace-weather-highlight-card.tone-uv .workspace-weather-highlight-card__icon {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.workspace-weather-highlight-card.tone-humidity .workspace-weather-highlight-card__icon {
+  color: #34b56f;
+  background: rgba(52, 181, 111, 0.12);
+}
+
+.workspace-weather-trend {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
+}
+
+.workspace-weather-trend__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.workspace-weather-trend__chart {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.workspace-weather-trend__scroll {
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.workspace-weather-trend__legend {
+  display: none;
+}
+
+.workspace-weather-trend-svg {
+  width: auto;
+  height: 100%;
+  min-height: 148px;
+}
+
+.workspace-weather-trend-svg__grid line {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.workspace-weather-trend-svg__area {
+  fill: rgba(168, 85, 247, 0.16);
+}
+
+.workspace-weather-trend-svg__line {
+  stroke: rgba(216, 180, 254, 0.96);
+  stroke-width: 3;
+}
+
+.workspace-weather-trend-svg__value-labels text,
+.workspace-weather-trend-svg__weather-symbols text,
+.workspace-weather-trend-svg__axis-labels text {
+  fill: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+}
+
+.workspace-weather__notice {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  max-width: min(520px, calc(100% - 40px));
+  border: 0;
+  border-radius: 10px;
+  background: rgba(168, 85, 247, 0.12);
+  color: rgba(237, 233, 254, 0.92);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1000px) {
+  body.is-weather-view {
+    overflow: auto;
+  }
+
+  body.is-weather-view .workspace-stage {
+    padding-top: 96px;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .workspace-weather,
+  .workspace-weather__layout {
+    height: auto;
+  }
+
+  .workspace-weather__layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    overflow: visible;
+  }
+
+  .workspace-weather__header,
+  .workspace-weather-showcase,
+  .workspace-weather-highlights,
+  .workspace-weather-trend {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .workspace-weather__header {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-weather-showcase {
+    grid-template-rows: auto auto;
+  }
+
+  .workspace-weather-now,
+  .workspace-weather-forecast-panel,
+  .workspace-weather-trend {
+    min-height: 220px;
+  }
+
+  .workspace-weather__metrics {
+    grid-template-rows: none;
+  }
+}
+
+/* Drive view sizing parity with Bus view. Keep after legacy map/layout rules. */
+body.is-drive-view .workspace-map {
+  height: min(68vh, 720px);
+}
+
+body.is-drive-view .workspace-services {
+  max-height: min(68vh, 720px);
+}
+
+body.is-drive-view .workspace-layout--drive .workspace-services--drive {
+  height: min(68vh, 720px);
+}
+
+@media (max-width: 680px) {
+  body.is-drive-view .workspace-map {
+    min-height: 230px;
+    height: clamp(230px, 34dvh, 300px);
+  }
+
+  body.is-drive-view .workspace-services,
+  body.is-drive-view .workspace-layout--drive .workspace-services--drive {
+    height: auto;
+    max-height: none;
+  }
+}
