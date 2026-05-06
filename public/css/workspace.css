@@ -4834,3 +4834,320 @@ body.is-drive-view .workspace-layout--drive .workspace-services--drive {
     max-height: none;
   }
 }
+
+/* Final Bus and Drive visual refresh. Keep local until approved. */
+body.is-bus-view,
+body.is-drive-view {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(144, 97, 249, 0.3), transparent 34%),
+    linear-gradient(180deg, #261241 0%, #11091f 42%, #050507 100%);
+}
+
+body.is-bus-view .workspace-stage,
+body.is-drive-view .workspace-stage {
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 104px 18px 24px;
+  place-items: start center;
+  overflow: hidden;
+}
+
+body.is-bus-view .workspace-header,
+body.is-drive-view .workspace-header,
+body.is-bus-view .workspace-nav,
+body.is-drive-view .workspace-nav {
+  border-color: rgba(168, 85, 247, 0.24);
+}
+
+body.is-bus-view .workspace-nav__item.is-active,
+body.is-drive-view .workspace-nav__item.is-active {
+  border-color: rgba(216, 180, 254, 0.72);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(124, 58, 237, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(168, 85, 247, 0.26);
+}
+
+.workspace-view--buses,
+.workspace-drive {
+  width: min(1080px, 100%);
+  height: 100%;
+  min-height: 0;
+}
+
+body.is-bus-view .workspace-layout,
+body.is-drive-view .workspace-layout {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(318px, 386px);
+  gap: 18px 20px;
+  align-items: stretch;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+body.is-bus-view .workspace-layout::before,
+body.is-drive-view .workspace-layout::before {
+  display: none;
+}
+
+body.is-bus-view .workspace-map,
+body.is-drive-view .workspace-map {
+  height: min(68vh, 720px);
+  min-height: 0;
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(11, 7, 18, 0.98), rgba(4, 4, 8, 0.99)),
+    #050507;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+body.is-bus-view .workspace-map::after,
+body.is-drive-view .workspace-map::after {
+  display: none;
+}
+
+body.is-bus-view .workspace-services,
+body.is-drive-view .workspace-services {
+  width: 100%;
+  height: min(68vh, 720px);
+  max-height: min(68vh, 720px);
+  min-height: 0;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(11, 7, 18, 0.98), rgba(4, 4, 8, 0.99)),
+    #050507;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+body.is-bus-view .workspace-services::before,
+body.is-drive-view .workspace-services::before {
+  display: none;
+}
+
+body.is-bus-view .workspace-services__split {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(142px, 0.38fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+body.is-bus-view .workspace-services__filters,
+body.is-bus-view .workspace-nearest,
+body.is-drive-view .workspace-drive-card,
+body.is-drive-view .workspace-drive-details,
+body.is-drive-view .workspace-drive-details__metric {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.026);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
+}
+
+body.is-bus-view .workspace-services__filters,
+body.is-bus-view .workspace-nearest {
+  padding: 10px;
+}
+
+body.is-bus-view .workspace-services__header,
+body.is-drive-view .workspace-services__header,
+body.is-bus-view .workspace-nearest__header {
+  padding-bottom: 8px;
+  border-bottom: 0;
+}
+
+body.is-bus-view .workspace-services__eyebrow,
+body.is-drive-view .workspace-services__eyebrow,
+body.is-bus-view .workspace-nearest__eyebrow,
+body.is-bus-view .workspace-nearest-card__meta,
+body.is-drive-view .workspace-drive-card__meta,
+body.is-drive-view .workspace-drive-details__subtitle {
+  color: rgba(216, 180, 254, 0.72);
+}
+
+body.is-bus-view .workspace-services__title,
+body.is-drive-view .workspace-services__title,
+body.is-bus-view .workspace-nearest__title,
+body.is-drive-view .workspace-drive-details__title {
+  color: rgba(255, 255, 255, 0.94);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+body.is-bus-view .workspace-services__actions {
+  gap: 8px;
+}
+
+body.is-bus-view .workspace-services__action,
+body.is-bus-view .workspace-panel-toggle {
+  border: 0;
+  background: rgba(168, 85, 247, 0.14);
+  color: rgba(237, 233, 254, 0.94);
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-services__list,
+body.is-bus-view .workspace-nearest__list,
+body.is-drive-view .workspace-drive__list {
+  min-height: 0;
+  padding-right: 3px;
+}
+
+body.is-bus-view .workspace-nearest-card,
+body.is-drive-view .workspace-drive-card {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.032);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
+}
+
+body.is-bus-view .workspace-nearest-card:hover,
+body.is-bus-view .workspace-nearest-card:focus-visible,
+body.is-drive-view .workspace-drive-card:hover,
+body.is-drive-view .workspace-drive-card:focus-visible {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.052);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+body.is-drive-view .workspace-drive-card.is-selected {
+  border-color: transparent;
+  background: rgba(168, 85, 247, 0.14);
+  box-shadow:
+    inset 3px 0 0 rgba(216, 180, 254, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+body.is-drive-view .workspace-drive-details {
+  margin-top: 10px;
+  padding: 10px;
+}
+
+body.is-drive-view .workspace-drive-details__metric {
+  padding: 8px 9px;
+}
+
+body.is-drive-view .workspace-drive__notice,
+body.is-drive-view .workspace-drive__notice--sync {
+  border: 0;
+  background: rgba(168, 85, 247, 0.12);
+  color: rgba(237, 233, 254, 0.92);
+}
+
+body.is-bus-view .workspace-services__list::-webkit-scrollbar-thumb,
+body.is-bus-view .workspace-nearest__list::-webkit-scrollbar-thumb,
+body.is-drive-view .workspace-drive__list::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.34);
+}
+
+@media (max-width: 680px) {
+  body.is-bus-view,
+  body.is-drive-view {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body.is-bus-view .workspace-stage,
+  body.is-drive-view .workspace-stage {
+    height: auto;
+    min-height: 100dvh;
+    padding: 88px 12px 16px;
+    overflow: visible;
+  }
+
+  .workspace-view--buses,
+  .workspace-drive {
+    height: auto;
+  }
+
+  body.is-bus-view .workspace-layout,
+  body.is-drive-view .workspace-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    height: auto;
+  }
+
+  body.is-bus-view .workspace-map,
+  body.is-drive-view .workspace-map {
+    min-height: 230px;
+    height: clamp(230px, 34dvh, 300px);
+  }
+
+  body.is-bus-view .workspace-services,
+  body.is-drive-view .workspace-services {
+    height: auto;
+    max-height: none;
+  }
+
+  body.is-bus-view .workspace-services__split {
+    grid-template-rows: auto auto;
+  }
+}
+
+/* Translucent dashboard section surfaces. */
+body.is-weather-view .workspace-weather__heading,
+body.is-weather-view .workspace-weather-showcase__status,
+body.is-weather-view .workspace-weather-now,
+body.is-weather-view .workspace-weather-forecast-panel,
+body.is-weather-view .workspace-weather-highlights,
+body.is-weather-view .workspace-weather-trend,
+body.is-libraries-view .workspace-library-card__content,
+body.is-bus-view .workspace-map,
+body.is-drive-view .workspace-map,
+body.is-bus-view .workspace-services,
+body.is-drive-view .workspace-services {
+  background:
+    linear-gradient(180deg, rgba(18, 10, 32, 0.72), rgba(6, 5, 12, 0.58)),
+    rgba(5, 5, 7, 0.42);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+body.is-libraries-view .workspace-library-card {
+  background: rgba(5, 5, 7, 0.46);
+}
+
+/* Remove leftover inner panel outlines in transport views. */
+body.is-bus-view .workspace-services__filters,
+body.is-bus-view .workspace-nearest,
+body.is-drive-view .workspace-drive-card,
+body.is-drive-view .workspace-drive-details,
+body.is-drive-view .workspace-drive-details__metric {
+  border: 0;
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-nearest-card,
+body.is-drive-view .workspace-drive-card {
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-services,
+body.is-drive-view .workspace-services {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-services__filters,
+body.is-bus-view .workspace-nearest,
+body.is-drive-view .workspace-drive-details,
+body.is-drive-view .workspace-drive-details__metric {
+  background: transparent;
+}
+
+body.is-drive-view .workspace-drive-card.is-selected {
+  box-shadow: inset 3px 0 0 rgba(216, 180, 254, 0.72);
+}
