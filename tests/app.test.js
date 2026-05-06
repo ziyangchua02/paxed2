@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import path from "node:path";
 
 import { createApp } from "../src/app.js";
 
@@ -127,6 +129,18 @@ test("GET /api/libraries/occupancy returns mock library seat data", async () => 
   assert.equal(typeof leeWeeNamLibrary.availableSeats, "number");
   assert.equal(typeof leeWeeNamLibrary.occupancyRate, "number");
   assert.equal(typeof leeWeeNamLibrary.lastUpdated, "string");
+});
+
+test("Vercel serverless API entrypoints cover workspace API namespaces", () => {
+  for (const namespace of ["drive", "libraries", "map", "weather"]) {
+    const entrypointPath = path.join("api", namespace, "[...route].js");
+
+    assert.equal(
+      existsSync(entrypointPath),
+      true,
+      `${entrypointPath} should exist for Vercel production routing`
+    );
+  }
 });
 
 test("GET / sends the expected security headers", async () => {
