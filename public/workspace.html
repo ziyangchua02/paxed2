@@ -15,7 +15,7 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="./css/workspace.css" />
+    <link rel="stylesheet" href="./css/workspace.css?v=library-progress-4" />
   </head>
   <body>
     <header class="workspace-header">
@@ -68,6 +68,22 @@
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M6.5 16.2h9.8a3.3 3.3 0 1 0-.7-6.5 4.7 4.7 0 0 0-9 .9A2.9 2.9 0 0 0 6.5 16.2Z" />
               <path d="M5.5 19.2h7.8M15.3 19.2h3.2" />
+            </svg>
+          </span>
+        </button>
+        <button
+          class="workspace-nav__item"
+          type="button"
+          id="workspace-view-libraries"
+          aria-label="Libraries dashboard"
+          aria-pressed="false"
+          title="Libraries"
+        >
+          <span class="workspace-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4.5 5.4h5.2c1.2 0 2.3.5 3 1.4v11.8c-.7-.9-1.8-1.4-3-1.4H4.5V5.4Z" />
+              <path d="M19.5 5.4h-5.2c-1.2 0-2.3.5-3 1.4v11.8c.7-.9 1.8-1.4 3-1.4h5.2V5.4Z" />
+              <path d="M7.2 9h2.1M7.2 12h2.1M14.7 9h2.1M14.7 12h2.1" />
             </svg>
           </span>
         </button>
@@ -244,32 +260,16 @@
         hidden
       >
         <div class="workspace-weather__layout">
-          <section
-            class="workspace-weather-showcase"
-            id="workspace-weather-showcase"
-            aria-label="Current and upcoming weather"
-          >
-            <article class="workspace-weather-now">
+          <header class="workspace-weather__header">
+            <div class="workspace-weather__heading">
               <p class="workspace-weather-now__eyebrow" id="workspace-weather-eyebrow">
                 Detecting location...
               </p>
-              <p class="workspace-weather-now__temp" id="workspace-weather-now-temp">
-                --<span>°C</span>
+              <h1 class="workspace-weather__title">Weather Dashboard</h1>
+              <p class="workspace-weather__subtitle">
+                Current Singapore conditions, forecast range, and campus planning signals.
               </p>
-              <p class="workspace-weather-now__condition" id="workspace-weather-now-condition">
-                Loading weather...
-              </p>
-              <p class="workspace-weather-now__location" id="workspace-weather-now-location">
-                Singapore
-              </p>
-            </article>
-
-            <div
-              class="workspace-weather-forecast-cards"
-              id="workspace-weather-forecast-cards"
-              role="list"
-              aria-label="Upcoming weather cards"
-            ></div>
+            </div>
 
             <article class="workspace-weather-showcase__status">
               <p class="workspace-weather-showcase__status-label">Forecast Window</p>
@@ -283,6 +283,47 @@
                 Loading weather feed...
               </p>
             </article>
+          </header>
+
+          <section
+            class="workspace-weather-showcase"
+            id="workspace-weather-showcase"
+            aria-label="Current and upcoming weather"
+          >
+            <article class="workspace-weather-now">
+              <div class="workspace-weather-now__glyph" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <circle cx="25" cy="24" r="10" />
+                  <path d="M25 7v5M25 36v5M8 24h5M37 24h5M13.2 12.2l3.5 3.5M33.3 32.3l3.5 3.5M36.8 12.2l-3.5 3.5M16.7 32.3l-3.5 3.5" />
+                  <path d="M18 48h27.4a9.1 9.1 0 0 0 .8-18.1 13 13 0 0 0-24.9 2.6A8 8 0 0 0 18 48Z" />
+                </svg>
+              </div>
+              <div class="workspace-weather-now__copy">
+                <span class="workspace-weather-now__label">Now</span>
+              <p class="workspace-weather-now__temp" id="workspace-weather-now-temp">
+                --<span>°C</span>
+              </p>
+              <p class="workspace-weather-now__condition" id="workspace-weather-now-condition">
+                Loading weather...
+              </p>
+              <p class="workspace-weather-now__location" id="workspace-weather-now-location">
+                Singapore
+              </p>
+              </div>
+            </article>
+
+            <section class="workspace-weather-forecast-panel" aria-label="Upcoming forecast">
+              <div class="workspace-weather-forecast-panel__header">
+                <h2>Next Forecasts</h2>
+                <span>4-day outlook</span>
+              </div>
+              <div
+                class="workspace-weather-forecast-cards"
+                id="workspace-weather-forecast-cards"
+                role="list"
+                aria-label="Upcoming weather cards"
+              ></div>
+            </section>
           </section>
 
           <section
@@ -329,6 +370,24 @@
           <p class="workspace-weather__notice" id="workspace-weather-notice" hidden></p>
         </div>
       </section>
+
+      <section
+        class="workspace-view workspace-view--libraries workspace-libraries"
+        id="workspace-libraries"
+        aria-labelledby="workspace-libraries-title"
+        hidden
+      >
+        <div class="workspace-libraries__layout">
+          <section
+            class="workspace-libraries__grid"
+            id="workspace-libraries-grid"
+            aria-label="NTU libraries with available seats"
+            role="list"
+          ></section>
+
+          <p class="workspace-libraries__status" id="workspace-libraries-status"></p>
+        </div>
+      </section>
     </main>
 
     <p
@@ -345,8 +404,9 @@
       crossorigin=""
     ></script>
     <script type="module" src="./js/auth-map.js"></script>
-    <script type="module" src="./js/workspace.js"></script>
+    <script type="module" src="./js/workspace.js?v=library-progress-4"></script>
     <script type="module" src="./js/drive-map.js"></script>
-    <script type="module" src="./js/weather-dashboard.js"></script>
+    <script type="module" src="./js/weather-dashboard.js?v=library-progress-4"></script>
+    <script type="module" src="./js/library-dashboard.js?v=library-progress-4"></script>
   </body>
 </html>

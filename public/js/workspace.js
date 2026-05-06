@@ -5,12 +5,20 @@ const statusElement = document.querySelector("#workspace-status");
 const busesViewButton = document.querySelector("#workspace-view-buses");
 const driveViewButton = document.querySelector("#workspace-view-drive");
 const weatherViewButton = document.querySelector("#workspace-view-weather");
+const librariesViewButton = document.querySelector("#workspace-view-libraries");
 const busDashboardElement = document.querySelector("#workspace-buses");
 const driveDashboardElement = document.querySelector("#workspace-drive");
 const weatherDashboardElement = document.querySelector("#workspace-weather");
+const librariesDashboardElement = document.querySelector("#workspace-libraries");
 const mobilePanelQuery = window.matchMedia("(max-width: 680px)");
 
 const AUTH_PAGE_PATH = "./auth.html";
+const WORKSPACE_VIEW_TITLES = {
+  buses: "Paxed | Workspace",
+  drive: "Paxed | Drive",
+  weather: "Paxed | Weather",
+  libraries: "Paxed | Our Locations"
+};
 
 let auth = null;
 let authModule = null;
@@ -35,10 +43,13 @@ const redirectToAuthPage = () => {
 
 const setDashboardView = (viewName = "buses") => {
   const normalizedViewName =
-    viewName === "drive" || viewName === "weather" ? viewName : "buses";
+    viewName === "drive" || viewName === "weather" || viewName === "libraries"
+      ? viewName
+      : "buses";
   const isBusView = normalizedViewName === "buses";
   const isDriveView = normalizedViewName === "drive";
   const isWeatherView = normalizedViewName === "weather";
+  const isLibrariesView = normalizedViewName === "libraries";
 
   if (busDashboardElement) {
     busDashboardElement.hidden = !isBusView;
@@ -50,6 +61,10 @@ const setDashboardView = (viewName = "buses") => {
 
   if (weatherDashboardElement) {
     weatherDashboardElement.hidden = !isWeatherView;
+  }
+
+  if (librariesDashboardElement) {
+    librariesDashboardElement.hidden = !isLibrariesView;
   }
 
   if (busesViewButton) {
@@ -67,9 +82,16 @@ const setDashboardView = (viewName = "buses") => {
     weatherViewButton.setAttribute("aria-pressed", String(isWeatherView));
   }
 
+  if (librariesViewButton) {
+    librariesViewButton.classList.toggle("is-active", isLibrariesView);
+    librariesViewButton.setAttribute("aria-pressed", String(isLibrariesView));
+  }
+
   document.body.classList.toggle("is-bus-view", isBusView);
   document.body.classList.toggle("is-drive-view", isDriveView);
   document.body.classList.toggle("is-weather-view", isWeatherView);
+  document.body.classList.toggle("is-libraries-view", isLibrariesView);
+  document.title = WORKSPACE_VIEW_TITLES[normalizedViewName] || WORKSPACE_VIEW_TITLES.buses;
 
   setStatus("");
 
@@ -87,7 +109,7 @@ const setDashboardView = (viewName = "buses") => {
 };
 
 const setupDashboardViewSwitcher = () => {
-  if (!busesViewButton || !driveViewButton || !weatherViewButton) {
+  if (!busesViewButton || !driveViewButton || !weatherViewButton || !librariesViewButton) {
     return;
   }
 
@@ -101,6 +123,10 @@ const setupDashboardViewSwitcher = () => {
 
   weatherViewButton.addEventListener("click", () => {
     setDashboardView("weather");
+  });
+
+  librariesViewButton.addEventListener("click", () => {
+    setDashboardView("libraries");
   });
 
   setDashboardView("buses");

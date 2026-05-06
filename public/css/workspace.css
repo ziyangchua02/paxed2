@@ -1376,8 +1376,385 @@ body.is-weather-view .workspace-nav__item.is-active {
 }
 
 body.is-drive-view .workspace-status,
-body.is-weather-view .workspace-status {
+body.is-weather-view .workspace-status,
+body.is-libraries-view .workspace-status {
   display: none;
+}
+
+.workspace-libraries {
+  width: min(1320px, 100%);
+}
+
+body.is-libraries-view {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body.is-libraries-view .workspace-stage {
+  min-height: 100vh;
+  place-items: start center;
+}
+
+.workspace-libraries__layout {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(10, 12, 24, 0.72), rgba(6, 7, 12, 0.54)),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 24%);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.workspace-libraries__layout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 34%, transparent 70%, rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 30%);
+  pointer-events: none;
+}
+
+.workspace-libraries__header,
+.workspace-libraries__note,
+.workspace-libraries__summary,
+.workspace-libraries__grid,
+.workspace-libraries__status {
+  position: relative;
+  z-index: 1;
+}
+
+.workspace-libraries__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(18, 22, 40, 0.78), rgba(8, 10, 18, 0.68)),
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.1), transparent 34%);
+}
+
+.workspace-libraries__heading {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.workspace-libraries__eyebrow {
+  margin: 0;
+  color: rgba(245, 158, 11, 0.92);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.workspace-libraries__title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.workspace-libraries__subtitle {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 0.94rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.workspace-libraries__controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: min(420px, 100%);
+}
+
+.workspace-libraries__search {
+  width: min(280px, 100%);
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.96);
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  letter-spacing: 0;
+  padding: 10px 14px;
+  outline: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.workspace-libraries__search::placeholder {
+  color: rgba(226, 232, 240, 0.5);
+}
+
+.workspace-libraries__search:focus {
+  border-color: rgba(245, 158, 11, 0.52);
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.14);
+}
+
+.workspace-libraries__refresh {
+  min-height: 40px;
+  border: 1px solid rgba(245, 158, 11, 0.44);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.82), rgba(245, 158, 11, 0.94));
+  color: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  padding: 10px 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.22);
+  transition:
+    box-shadow 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.workspace-libraries__refresh:hover,
+.workspace-libraries__refresh:focus-visible {
+  box-shadow: 0 10px 22px rgba(245, 158, 11, 0.28);
+  transform: translateY(-1px);
+}
+
+.workspace-libraries__refresh:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+}
+
+.workspace-libraries__note {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.32));
+  color: rgba(224, 242, 254, 0.94);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+.workspace-libraries__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workspace-libraries-summary-card {
+  display: grid;
+  gap: 6px;
+  min-height: 116px;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.14);
+}
+
+.workspace-libraries-summary-card__label,
+.workspace-library-card__stat-label {
+  color: rgba(148, 163, 184, 0.88);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.workspace-libraries-summary-card__value {
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.workspace-libraries-summary-card__value--name {
+  font-size: 1rem;
+  line-height: 1.16;
+  overflow-wrap: anywhere;
+}
+
+.workspace-libraries-summary-card__meta {
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.workspace-libraries__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 10px;
+}
+
+.workspace-library-card {
+  --library-tone: #64748b;
+  display: grid;
+  gap: 12px;
+  min-height: 224px;
+  padding: 13px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--library-tone) 42%, rgba(255, 255, 255, 0.1));
+  background:
+    linear-gradient(180deg, rgba(18, 22, 40, 0.82), rgba(8, 10, 18, 0.74)),
+    linear-gradient(135deg, color-mix(in srgb, var(--library-tone) 12%, transparent), transparent 58%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 16px 34px rgba(0, 0, 0, 0.18);
+}
+
+.workspace-library-card.tone-open {
+  --library-tone: #22c55e;
+  --library-bar: #22c55e;
+  --library-bar-glow: rgba(34, 197, 94, 0.24);
+}
+
+.workspace-library-card.tone-moderate {
+  --library-tone: #eab308;
+  --library-bar: #eab308;
+  --library-bar-glow: rgba(234, 179, 8, 0.24);
+}
+
+.workspace-library-card.tone-busy {
+  --library-tone: #ef4444;
+  --library-bar: #ef4444;
+  --library-bar-glow: rgba(239, 68, 68, 0.24);
+}
+
+.workspace-library-card.tone-unknown {
+  --library-tone: #64748b;
+  --library-bar: #64748b;
+  --library-bar-glow: rgba(100, 116, 139, 0.2);
+}
+
+.workspace-library-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.workspace-library-card__title-block {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.workspace-library-card__location {
+  margin: 0;
+  color: color-mix(in srgb, var(--library-tone) 74%, rgba(255, 255, 255, 0.88));
+  font-family: "DM Mono", "Fira Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+}
+
+.workspace-library-card__title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.workspace-library-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 58px;
+  min-height: 32px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--library-tone) 54%, rgba(255, 255, 255, 0.16));
+  background: color-mix(in srgb, var(--library-tone) 22%, rgba(255, 255, 255, 0.08));
+  color: rgba(255, 255, 255, 0.96);
+  font-family: "DM Mono", "Fira Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.workspace-library-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.workspace-library-card__stats div {
+  display: grid;
+  gap: 4px;
+  min-height: 66px;
+  padding: 9px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.46);
+}
+
+.workspace-library-card__stat-label {
+  font-size: 0.56rem;
+  letter-spacing: 0.09em;
+}
+
+.workspace-library-card__stat-value {
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.workspace-library-card__updated,
+.workspace-libraries__status,
+.workspace-libraries__empty {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.84);
+  font-size: 0.7rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.workspace-libraries__status[data-tone="error"] {
+  color: #fca5a5;
+}
+
+.workspace-libraries__empty {
+  grid-column: 1 / -1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.46);
 }
 
 .map-stop-marker {
@@ -2151,6 +2528,12 @@ body.is-bus-view .map-vehicle-pin__label {
     place-items: stretch center;
   }
 
+  body.is-libraries-view .workspace-stage {
+    min-height: auto;
+    padding: 72px 12px 16px;
+    place-items: stretch center;
+  }
+
   .workspace-layout {
     grid-template-columns: 1fr;
     align-items: stretch;
@@ -2200,6 +2583,63 @@ body.is-bus-view .map-vehicle-pin__label {
 
   .workspace-drive__list {
     max-height: min(170px, 20vh);
+  }
+
+  .workspace-libraries__layout {
+    gap: 10px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .workspace-libraries__header {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 12px;
+    padding: 11px;
+    border-radius: 14px;
+  }
+
+  .workspace-libraries__title {
+    font-size: 1.62rem;
+  }
+
+  .workspace-libraries__subtitle {
+    font-size: 0.86rem;
+  }
+
+  .workspace-libraries__controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .workspace-libraries__search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .workspace-libraries__summary,
+  .workspace-libraries__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-libraries-summary-card {
+    min-height: 96px;
+  }
+
+  .workspace-library-card {
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .workspace-library-card__stats {
+    gap: 7px;
+  }
+
+  .workspace-library-card__stats div {
+    min-height: 58px;
+    padding: 8px;
   }
 
   .workspace-weather__layout {
@@ -2266,5 +2706,1530 @@ body.is-bus-view .map-vehicle-pin__label {
 
   .workspace-weather-trend-svg {
     height: 180px;
+  }
+}
+/* Modern dashboard refresh inspired by current dark SaaS/weather dashboard patterns. */
+body.is-weather-view {
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    linear-gradient(135deg, rgba(5, 10, 18, 0.98) 0%, rgba(12, 17, 30, 0.98) 48%, rgba(7, 12, 18, 0.98) 100%),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.1), rgba(245, 158, 11, 0.08));
+}
+
+body.is-weather-view .workspace-stage,
+body.is-libraries-view .workspace-stage {
+  min-height: 100vh;
+  place-items: start center;
+}
+
+body.is-weather-view .workspace-header,
+body.is-libraries-view .workspace-header {
+  border-radius: 20px;
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(3, 7, 18, 0.68);
+}
+
+body.is-weather-view .workspace-nav__item.is-active {
+  border-color: rgba(34, 211, 238, 0.72);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.9), rgba(14, 165, 233, 0.86));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(14, 165, 233, 0.28);
+}
+
+.workspace-weather {
+  width: min(1280px, 100%);
+}
+
+.workspace-weather__layout {
+  gap: 14px;
+  padding: 16px;
+  border-radius: 28px;
+  border-color: rgba(148, 163, 184, 0.2);
+  background:
+    linear-gradient(180deg, rgba(8, 13, 24, 0.92), rgba(4, 8, 15, 0.94)),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.12), rgba(245, 158, 11, 0.08));
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.workspace-weather__header {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.workspace-weather__heading,
+.workspace-weather-showcase__status,
+.workspace-weather-now,
+.workspace-weather-forecast-panel,
+.workspace-weather-highlight-card,
+.workspace-weather-trend {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.74), rgba(2, 6, 23, 0.62)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+.workspace-weather__heading {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  min-height: 156px;
+  padding: 20px;
+  border-radius: 22px;
+}
+
+.workspace-weather__title {
+  margin: 0;
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 2.35rem;
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.workspace-weather__subtitle {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(203, 213, 225, 0.78);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+.workspace-weather-now__eyebrow {
+  color: rgba(34, 211, 238, 0.94);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.workspace-weather-showcase {
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.3fr);
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.workspace-weather-showcase__status {
+  align-content: center;
+  gap: 8px;
+  min-height: 156px;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+.workspace-weather-showcase__status-label,
+.workspace-weather-highlight-card__title {
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.66rem;
+  font-weight: 740;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.workspace-weather-showcase__status-value {
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 1.28rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.workspace-weather-showcase__status-updated {
+  color: rgba(203, 213, 225, 0.72);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.workspace-weather-now {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 18px;
+  min-height: 294px;
+  padding: 22px;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(150deg, rgba(8, 47, 73, 0.9), rgba(15, 23, 42, 0.82) 46%, rgba(24, 24, 27, 0.86)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 64px);
+}
+
+.workspace-weather-now::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.16), transparent 44%, rgba(245, 158, 11, 0.14));
+  pointer-events: none;
+}
+
+.workspace-weather-now__glyph,
+.workspace-weather-now__copy {
+  position: relative;
+  z-index: 1;
+}
+
+.workspace-weather-now__glyph {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(250, 204, 21, 0.94);
+}
+
+.workspace-weather-now__glyph svg {
+  width: 92px;
+  height: 92px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.workspace-weather-now__copy {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.workspace-weather-now__label {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.32);
+  background: rgba(34, 211, 238, 0.1);
+  color: rgba(224, 242, 254, 0.96);
+  font-size: 0.68rem;
+  font-weight: 760;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.workspace-weather-now__temp {
+  color: #f8fafc;
+  font-size: 4.65rem;
+  font-weight: 780;
+  line-height: 0.88;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.workspace-weather-now__condition {
+  color: rgba(248, 250, 252, 0.96);
+  font-size: 1.2rem;
+  font-weight: 680;
+  letter-spacing: 0;
+}
+
+.workspace-weather-now__location {
+  color: rgba(203, 213, 225, 0.74);
+  font-size: 0.82rem;
+  line-height: 1.38;
+}
+
+.workspace-weather-forecast-panel {
+  display: grid;
+  gap: 10px;
+  min-height: 294px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.workspace-weather-forecast-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workspace-weather-forecast-panel__header h2,
+.workspace-weather-highlights__title,
+.workspace-weather-trend__title {
+  margin: 0;
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 1rem;
+  font-weight: 740;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.workspace-weather-forecast-panel__header span,
+.workspace-weather-trend__sub {
+  color: rgba(148, 163, 184, 0.82);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.workspace-weather-forecast-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.workspace-weather-forecast-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 72px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.52);
+}
+
+.workspace-weather-forecast-card__icon {
+  width: 38px;
+  height: 38px;
+}
+
+.workspace-weather-forecast-card__copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.workspace-weather-forecast-card__day {
+  color: rgba(248, 250, 252, 0.96);
+  font-size: 0.84rem;
+  font-weight: 720;
+}
+
+.workspace-weather-forecast-card__condition,
+.workspace-weather-forecast-card__date {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.8);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-weather-forecast-card__temp {
+  color: #f8fafc;
+  font-size: 1.02rem;
+  font-weight: 760;
+  text-align: right;
+}
+
+.workspace-weather-highlights {
+  gap: 10px;
+}
+
+.workspace-weather-highlights__header {
+  padding: 2px 2px 0;
+}
+
+.workspace-weather__metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workspace-weather-highlight-card {
+  min-height: 132px;
+  padding: 14px;
+  border-radius: 18px;
+}
+
+.workspace-weather-highlight-card__head {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.workspace-weather-highlight-card__icon {
+  order: 2;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.workspace-weather-highlight-card__meta {
+  margin-top: 4px;
+  color: rgba(148, 163, 184, 0.82);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.workspace-weather-highlight-card__value {
+  margin-top: 8px;
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 1.3rem;
+  font-weight: 760;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.workspace-weather-trend {
+  gap: 12px;
+  padding: 16px;
+  border-radius: 22px;
+}
+
+.workspace-weather-trend__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.workspace-weather-trend__chart {
+  min-height: 238px;
+  padding: 6px 0 0;
+}
+
+.workspace-weather-trend__legend span {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.72);
+  font-size: 0.68rem;
+}
+
+.workspace-weather-trend-svg {
+  height: 238px;
+}
+
+.workspace-weather__notice {
+  border-radius: 14px;
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(245, 158, 11, 0.12);
+  color: rgba(254, 243, 199, 0.96);
+}
+
+body.is-libraries-view {
+  background:
+    linear-gradient(135deg, rgba(4, 8, 14, 0.98) 0%, rgba(15, 19, 18, 0.98) 52%, rgba(8, 10, 16, 0.98) 100%),
+    linear-gradient(90deg, rgba(34, 197, 94, 0.1), rgba(245, 158, 11, 0.08));
+}
+
+body.is-libraries-view .workspace-nav__item.is-active {
+  border-color: rgba(34, 197, 94, 0.72);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(20, 184, 166, 0.86));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(34, 197, 94, 0.26);
+}
+
+.workspace-libraries__layout {
+  gap: 14px;
+  padding: 16px;
+  border-radius: 28px;
+  border-color: rgba(148, 163, 184, 0.18);
+  background:
+    linear-gradient(180deg, rgba(9, 14, 18, 0.9), rgba(4, 8, 14, 0.94)),
+    linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(245, 158, 11, 0.06));
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.workspace-libraries__header {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 16px;
+  align-items: stretch;
+  min-height: 188px;
+  padding: 18px;
+  border-radius: 24px;
+  border-color: rgba(148, 163, 184, 0.18);
+  background:
+    linear-gradient(135deg, rgba(20, 83, 45, 0.46), rgba(15, 23, 42, 0.72) 48%, rgba(24, 24, 27, 0.82)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 72px);
+}
+
+.workspace-libraries__heading {
+  align-content: center;
+  gap: 9px;
+}
+
+.workspace-libraries__eyebrow {
+  color: rgba(134, 239, 172, 0.94);
+  font-size: 0.7rem;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+}
+
+.workspace-libraries__title {
+  max-width: 760px;
+  color: rgba(248, 250, 252, 0.98);
+  font-size: 2.55rem;
+  font-weight: 780;
+  line-height: 1;
+}
+
+.workspace-libraries__subtitle {
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.94rem;
+}
+
+.workspace-libraries__controls {
+  align-self: end;
+  justify-content: flex-end;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.workspace-libraries__search {
+  width: min(260px, 100%);
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.workspace-libraries__refresh {
+  border-color: rgba(34, 197, 94, 0.46);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.92), rgba(20, 184, 166, 0.88));
+  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.2);
+}
+
+.workspace-libraries__note {
+  border-radius: 999px;
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.1);
+  color: rgba(254, 243, 199, 0.96);
+}
+
+.workspace-libraries__summary {
+  grid-template-columns: 1.1fr 0.9fr 1fr;
+}
+
+.workspace-libraries-summary-card {
+  min-height: 118px;
+  padding: 15px;
+  border-radius: 20px;
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.6)),
+    linear-gradient(135deg, rgba(34, 197, 94, 0.08), transparent);
+}
+
+.workspace-libraries-summary-card__value {
+  font-size: 2rem;
+  font-weight: 780;
+}
+
+.workspace-libraries__grid {
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 12px;
+}
+
+.workspace-library-card {
+  min-height: 254px;
+  gap: 13px;
+  padding: 16px;
+  border-radius: 22px;
+  border-color: color-mix(in srgb, var(--library-tone) 34%, rgba(148, 163, 184, 0.16));
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.64)),
+    linear-gradient(135deg, color-mix(in srgb, var(--library-tone) 16%, transparent), transparent 62%);
+}
+
+.workspace-library-card__main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  align-items: center;
+}
+
+.workspace-library-card__header {
+  display: grid;
+  gap: 5px;
+}
+
+.workspace-library-card__location {
+  color: rgba(148, 163, 184, 0.86);
+}
+
+.workspace-library-card__title {
+  font-size: 1.08rem;
+  line-height: 1.16;
+}
+
+.workspace-library-card__availability {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.workspace-library-card__stats {
+  gap: 9px;
+}
+
+.workspace-library-card__stats div {
+  min-height: 70px;
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.workspace-library-card__updated {
+  color: rgba(148, 163, 184, 0.78);
+}
+
+@media (max-width: 980px) {
+  .workspace-weather__header,
+  .workspace-weather-showcase,
+  .workspace-libraries__header,
+  .workspace-libraries__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-weather-now {
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 680px) {
+  body.is-weather-view .workspace-stage,
+  body.is-libraries-view .workspace-stage {
+    min-height: auto;
+    padding: 72px 12px 16px;
+    place-items: stretch center;
+  }
+
+  .workspace-weather__layout,
+  .workspace-libraries__layout {
+    padding: 12px;
+    border-radius: 22px;
+  }
+
+  .workspace-weather__heading,
+  .workspace-weather-showcase__status,
+  .workspace-weather-now,
+  .workspace-weather-forecast-panel,
+  .workspace-libraries__header {
+    border-radius: 18px;
+  }
+
+  .workspace-weather__heading {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .workspace-weather__title,
+  .workspace-libraries__title {
+    font-size: 1.74rem;
+  }
+
+  .workspace-weather-showcase__status {
+    min-height: auto;
+  }
+
+  .workspace-weather-now {
+    grid-template-columns: 1fr;
+    align-items: start;
+    min-height: 0;
+  }
+
+  .workspace-weather-now__glyph {
+    width: 86px;
+    height: 86px;
+    border-radius: 22px;
+  }
+
+  .workspace-weather-now__glyph svg {
+    width: 62px;
+    height: 62px;
+  }
+
+  .workspace-weather-now__temp {
+    font-size: 3.4rem;
+  }
+
+  .workspace-weather__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-weather-highlight-card:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .workspace-weather-trend__header {
+    display: grid;
+  }
+
+  .workspace-weather-trend__chart {
+    min-height: 180px;
+  }
+
+  .workspace-weather-trend-svg {
+    height: 190px;
+  }
+
+  .workspace-libraries__header {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .workspace-libraries__controls {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-radius: 18px;
+  }
+
+  .workspace-libraries__search,
+  .workspace-libraries__refresh {
+    width: 100%;
+  }
+
+  .workspace-libraries__note {
+    border-radius: 14px;
+  }
+
+  .workspace-libraries__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-library-card {
+    min-height: 0;
+  }
+
+  .workspace-library-card__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Single-screen dashboard fit for Weather and Libraries. */
+body.is-weather-view,
+body.is-libraries-view {
+  overflow: hidden;
+}
+
+body.is-weather-view .workspace-stage,
+body.is-libraries-view .workspace-stage {
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 86px 18px 14px;
+  overflow: hidden;
+}
+
+.workspace-view--weather,
+.workspace-view--libraries {
+  height: 100%;
+  min-height: 0;
+}
+
+.workspace-weather__layout,
+.workspace-libraries__layout {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-weather__layout {
+  display: grid;
+  grid-template-columns: minmax(330px, 0.95fr) minmax(0, 1.15fr);
+  grid-template-rows: 92px minmax(0, 1fr) 168px;
+  gap: 10px;
+  padding: 12px;
+}
+
+.workspace-weather__header {
+  grid-column: 1 / -1;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 10px;
+}
+
+.workspace-weather__heading,
+.workspace-weather-showcase__status {
+  min-height: 0;
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+
+.workspace-weather__heading {
+  gap: 4px;
+}
+
+.workspace-weather__title {
+  font-size: 1.62rem;
+}
+
+.workspace-weather__subtitle {
+  font-size: 0.78rem;
+  line-height: 1.32;
+}
+
+.workspace-weather-now__eyebrow,
+.workspace-weather-showcase__status-label,
+.workspace-weather-highlight-card__title {
+  font-size: 0.58rem;
+}
+
+.workspace-weather-showcase__status {
+  gap: 5px;
+}
+
+.workspace-weather-showcase__status-value {
+  font-size: 0.96rem;
+}
+
+.workspace-weather-showcase__status-updated {
+  font-size: 0.68rem;
+}
+
+.workspace-weather-showcase {
+  grid-column: 1;
+  grid-row: 2 / 4;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.workspace-weather-now {
+  min-height: 0;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 20px;
+}
+
+.workspace-weather-now__glyph {
+  width: 92px;
+  height: 92px;
+  border-radius: 22px;
+}
+
+.workspace-weather-now__glyph svg {
+  width: 66px;
+  height: 66px;
+}
+
+.workspace-weather-now__copy {
+  gap: 6px;
+}
+
+.workspace-weather-now__temp {
+  font-size: 3.35rem;
+}
+
+.workspace-weather-now__condition {
+  font-size: 1rem;
+}
+
+.workspace-weather-now__location {
+  font-size: 0.72rem;
+}
+
+.workspace-weather-forecast-panel {
+  min-height: 0;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 20px;
+}
+
+.workspace-weather-forecast-card {
+  min-height: 58px;
+  padding: 8px 10px;
+  border-radius: 14px;
+}
+
+.workspace-weather-forecast-card__icon {
+  width: 30px;
+  height: 30px;
+}
+
+.workspace-weather-forecast-card__day {
+  font-size: 0.76rem;
+}
+
+.workspace-weather-forecast-card__condition,
+.workspace-weather-forecast-card__date {
+  font-size: 0.64rem;
+}
+
+.workspace-weather-forecast-card__temp {
+  font-size: 0.86rem;
+}
+
+.workspace-weather-highlights {
+  grid-column: 2;
+  grid-row: 2;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.workspace-weather__metrics {
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.workspace-weather-highlight-card {
+  min-height: 0;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.workspace-weather-highlight-card__icon {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.workspace-weather-highlight-card__meta {
+  font-size: 0.62rem;
+  line-height: 1.28;
+}
+
+.workspace-weather-highlight-card__value {
+  margin-top: 2px;
+  font-size: 1rem;
+  line-height: 1.05;
+}
+
+.workspace-weather-trend {
+  grid-column: 2;
+  grid-row: 3;
+  min-height: 0;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 18px;
+}
+
+.workspace-weather-trend__chart {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-weather-trend__legend {
+  display: none;
+}
+
+.workspace-weather-trend-svg {
+  height: 126px;
+}
+
+.workspace-weather-trend-svg__value-labels text,
+.workspace-weather-trend-svg__weather-symbols text,
+.workspace-weather-trend-svg__axis-labels text {
+  font-size: 10px;
+}
+
+.workspace-weather__notice {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  max-width: min(520px, calc(100% - 36px));
+}
+
+.workspace-libraries__layout {
+  display: grid;
+  grid-template-rows: 132px 88px minmax(0, 1fr) auto;
+  gap: 9px;
+  padding: 12px;
+}
+
+.workspace-libraries__header {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 390px);
+  padding: 14px;
+  border-radius: 20px;
+}
+
+.workspace-libraries__heading {
+  gap: 5px;
+}
+
+.workspace-libraries__eyebrow {
+  font-size: 0.6rem;
+}
+
+.workspace-libraries__title {
+  font-size: 1.86rem;
+  line-height: 1.02;
+}
+
+.workspace-libraries__subtitle {
+  font-size: 0.78rem;
+  line-height: 1.32;
+}
+
+.workspace-libraries__controls {
+  padding: 7px;
+}
+
+.workspace-libraries__search,
+.workspace-libraries__refresh {
+  min-height: 34px;
+  font-size: 0.7rem;
+}
+
+.workspace-libraries__note {
+  align-self: center;
+  padding: 7px 11px;
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.workspace-libraries__summary {
+  min-height: 0;
+  gap: 8px;
+}
+
+.workspace-libraries-summary-card {
+  min-height: 0;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 16px;
+}
+
+.workspace-libraries-summary-card__label,
+.workspace-library-card__stat-label {
+  font-size: 0.54rem;
+}
+
+.workspace-libraries-summary-card__value {
+  font-size: 1.42rem;
+}
+
+.workspace-libraries-summary-card__value--name {
+  font-size: 0.82rem;
+}
+
+.workspace-libraries-summary-card__meta {
+  font-size: 0.64rem;
+}
+
+.workspace-libraries__grid {
+  min-height: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: stretch;
+  gap: 8px;
+}
+
+.workspace-library-card {
+  min-height: 0;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 16px;
+}
+
+.workspace-library-card__header {
+  gap: 2px;
+}
+
+.workspace-library-card__location {
+  font-size: 0.56rem;
+}
+
+.workspace-library-card__title {
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
+.workspace-library-card__availability,
+.workspace-library-card__updated {
+  font-size: 0.62rem;
+}
+
+.workspace-library-card__stats {
+  gap: 5px;
+}
+
+.workspace-library-card__stats div {
+  min-height: 42px;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.workspace-library-card__stat-value {
+  font-size: 0.86rem;
+}
+
+.workspace-libraries__status {
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+@media (max-width: 1160px) {
+  .workspace-libraries__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  body.is-weather-view,
+  body.is-libraries-view {
+    overflow: auto;
+  }
+
+  body.is-weather-view .workspace-stage,
+  body.is-libraries-view .workspace-stage {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .workspace-weather__layout,
+  .workspace-libraries__layout {
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* Shared purple dashboard border system. */
+body.is-weather-view,
+body.is-libraries-view {
+  --workspace-dashboard-border: rgba(168, 85, 247, 0.24);
+  --workspace-dashboard-border-soft: rgba(168, 85, 247, 0.18);
+  --workspace-dashboard-border-strong: rgba(168, 85, 247, 0.42);
+}
+
+.workspace-weather__layout,
+.workspace-libraries__layout {
+  border: 0;
+}
+
+.workspace-libraries__layout {
+  box-shadow: none;
+  background: transparent;
+}
+
+body.is-weather-view .workspace-header,
+body.is-libraries-view .workspace-header,
+body.is-weather-view .workspace-nav,
+body.is-libraries-view .workspace-nav,
+.workspace-weather__heading,
+.workspace-weather-showcase__status,
+.workspace-weather-now,
+.workspace-weather-forecast-panel,
+.workspace-weather-forecast-card,
+.workspace-weather-highlight-card,
+.workspace-weather-trend,
+.workspace-libraries__header,
+.workspace-libraries__controls,
+.workspace-libraries__note,
+.workspace-libraries-summary-card,
+.workspace-library-card,
+.workspace-library-card__stats div {
+  border-color: var(--workspace-dashboard-border);
+}
+
+.workspace-weather-highlight-card.tone-wind,
+.workspace-weather-highlight-card.tone-temperature,
+.workspace-weather-highlight-card.tone-rain,
+.workspace-weather-highlight-card.tone-thunder,
+.workspace-weather-highlight-card.tone-humidity,
+.workspace-weather-highlight-card.tone-uv {
+  border-color: var(--workspace-dashboard-border);
+}
+
+.workspace-libraries__search,
+.workspace-libraries__refresh,
+.workspace-weather-now__label {
+  border-color: var(--workspace-dashboard-border-strong);
+}
+
+body.is-weather-view .workspace-nav__item.is-active,
+body.is-libraries-view .workspace-nav__item.is-active {
+  border-color: rgba(216, 180, 254, 0.72);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(124, 58, 237, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(168, 85, 247, 0.26);
+}
+
+.workspace-libraries__status {
+  display: none;
+}
+
+/* Reduce nested outlines and make occupancy circles read as filled progress. */
+.workspace-libraries__controls,
+.workspace-libraries__search,
+.workspace-libraries__refresh,
+.workspace-libraries__note,
+.workspace-weather-forecast-card,
+.workspace-library-card__stats div {
+  border: 0;
+}
+
+.workspace-libraries__search {
+  box-shadow: none;
+}
+
+.workspace-libraries__search:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+}
+
+.workspace-libraries__controls {
+  background: rgba(2, 6, 23, 0.26);
+}
+
+.workspace-libraries__note {
+  background: rgba(168, 85, 247, 0.1);
+  color: rgba(237, 233, 254, 0.96);
+}
+
+.workspace-weather-forecast-card,
+.workspace-library-card__stats div {
+  background: rgba(2, 6, 23, 0.3);
+}
+
+.workspace-library-card__progress {
+  display: grid;
+  gap: 6px;
+}
+
+.workspace-library-card__progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workspace-library-card__progress-head span {
+  color: rgba(148, 163, 184, 0.82);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.workspace-library-card__progress-head strong {
+  color: rgba(248, 250, 252, 0.96);
+  font-family: "DM Mono", "Fira Mono", ui-monospace, monospace;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.workspace-library-card__progress-track {
+  position: relative;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.68);
+}
+
+.workspace-library-card__progress-track span {
+  display: block;
+  width: var(--occupancy-width, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--library-bar, #64748b),
+    color-mix(in srgb, var(--library-bar, #64748b) 76%, #ffffff 18%)
+  );
+  box-shadow: 0 0 16px var(--library-bar-glow, rgba(100, 116, 139, 0.2));
+}
+
+@media (max-width: 900px) {
+  .workspace-library-card__progress-track {
+    height: 9px;
+  }
+}
+
+/* Libraries page: image-card layout matching the public locations view. */
+body.is-libraries-view {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(144, 97, 249, 0.32), transparent 34%),
+    linear-gradient(180deg, #261241 0%, #11091f 42%, #050507 100%);
+}
+
+body.is-libraries-view .workspace-stage {
+  padding: 82px 20px 24px;
+}
+
+.workspace-libraries__layout {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.workspace-libraries__layout::before {
+  display: none;
+}
+
+.workspace-libraries__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 20px 24px;
+  width: min(1040px, 100%);
+  min-height: 0;
+  margin: 0 auto;
+  align-content: center;
+}
+
+.workspace-library-card {
+  --library-bar: #34b56f;
+  --library-bar-glow: transparent;
+  display: grid;
+  grid-template-rows: 67% 33%;
+  gap: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(18, 22, 40, 0.94), rgba(8, 10, 18, 0.9));
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.workspace-library-card.tone-open {
+  --library-bar: #34b56f;
+}
+
+.workspace-library-card.tone-moderate {
+  --library-bar: #f59e0b;
+}
+
+.workspace-library-card.tone-busy {
+  --library-bar: #ef4444;
+}
+
+.workspace-library-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+.workspace-library-card__image--hss {
+  object-position: 0% 10%;
+}
+
+.workspace-library-card__image--chinese {
+  object-position: 5% top;
+}
+
+.workspace-library-card__content {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  min-height: 0;
+  padding: 13px 15px 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04)),
+    rgba(8, 10, 18, 0.92);
+}
+
+.workspace-library-card__header {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  gap: 0;
+  text-align: center;
+}
+
+.workspace-library-card__title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-family: "Onest", "Inter", "Segoe UI", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 680;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.workspace-library-card__capacity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+.workspace-library-card__capacity > span {
+  color: rgba(255, 255, 255, 0.86);
+  font-family: "Onest", "Inter", "Segoe UI", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.workspace-library-card__progress-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.workspace-library-card__progress-track span {
+  display: block;
+  width: var(--occupancy-width, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--library-bar, #34c759);
+  box-shadow: none;
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+@media (max-width: 1000px) {
+  body.is-libraries-view {
+    overflow: auto;
+  }
+
+  body.is-libraries-view .workspace-stage {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .workspace-libraries__layout {
+    height: auto;
+    overflow: visible;
+  }
+
+  .workspace-libraries__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 260px;
+  }
+}
+
+@media (max-width: 620px) {
+  .workspace-libraries__title {
+    font-size: 2.8rem;
+  }
+
+  .workspace-libraries__grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 260px;
+  }
+
+  .workspace-library-card__capacity {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Final Libraries sizing and typography override. Keep after legacy card rules. */
+.workspace-libraries__grid {
+  width: min(900px, 100%);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 238px;
+  gap: 18px 20px;
+}
+
+.workspace-library-card {
+  grid-template-rows: 65% 35%;
+  border-radius: 10px;
+  background: #050507;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.workspace-library-card__content {
+  gap: 6px;
+  padding: 11px 13px 10px;
+  background:
+    linear-gradient(180deg, rgba(11, 7, 18, 0.98), rgba(4, 4, 8, 0.99)),
+    #050507;
+}
+
+.workspace-library-card__header {
+  place-items: start;
+  text-align: left;
+}
+
+.workspace-library-card__title {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.94);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 610;
+  line-height: 1.16;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.workspace-library-card__capacity {
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 12px;
+}
+
+.workspace-library-card__capacity > span {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 690;
+  letter-spacing: 0;
+}
+
+.workspace-library-card__capacity-label strong {
+  color: inherit;
+  font-weight: inherit;
+}
+
+.workspace-library-card__progress-track {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.workspace-library-card__progress-track::-webkit-progress-bar {
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.workspace-library-card__progress-track::-webkit-progress-value {
+  border-radius: inherit;
+  background: var(--library-bar, #34b56f);
+  box-shadow: none;
+}
+
+.workspace-library-card__progress-track::-moz-progress-bar {
+  border-radius: inherit;
+  background: var(--library-bar, #34b56f);
+  box-shadow: none;
+}
+
+@media (max-width: 1000px) {
+  .workspace-libraries__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 238px;
+  }
+}
+
+@media (max-width: 620px) {
+  .workspace-libraries__grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 238px;
   }
 }

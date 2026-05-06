@@ -210,16 +210,16 @@ const resolveTrendWeatherSymbol = (timestampMs, conditionText) => {
   const normalizedCondition = String(conditionText || "").toLowerCase();
 
   if (/thunder|storm|rain|shower|drizzle/.test(normalizedCondition)) {
-    return "🌧";
+    return "Rain";
   }
 
   if (/cloud|haze|mist|fog|smoke/.test(normalizedCondition)) {
-    return "☁";
+    return "Cloud";
   }
 
   const timestamp = new Date(timestampMs);
   const hourDecimal = timestamp.getHours() + timestamp.getMinutes() / 60;
-  return hourDecimal >= 7 && hourDecimal < 18.75 ? "☀" : "☁";
+  return hourDecimal >= 7 && hourDecimal < 18.75 ? "Sun" : "Cloud";
 };
 
 const getReferenceCenter = () => {
@@ -400,9 +400,12 @@ const renderForecastCards = (payload) => {
     weatherForecastCardsElement.innerHTML = `
       <article class="workspace-weather-forecast-card ${getForecastToneClass(fallbackCondition)}" role="listitem">
         <div class="workspace-weather-forecast-card__icon">${getForecastIconMarkup(fallbackCondition)}</div>
+        <div class="workspace-weather-forecast-card__copy">
+          <p class="workspace-weather-forecast-card__day">Forecast pending</p>
+          <p class="workspace-weather-forecast-card__condition">${escapeHtml(fallbackCondition)}</p>
+          <p class="workspace-weather-forecast-card__date">Data refresh in progress</p>
+        </div>
         <p class="workspace-weather-forecast-card__temp">--</p>
-        <p class="workspace-weather-forecast-card__day">Forecast pending</p>
-        <p class="workspace-weather-forecast-card__date">Data refresh in progress</p>
       </article>
     `;
     return;
@@ -418,9 +421,12 @@ const renderForecastCards = (payload) => {
       return `
         <article class="workspace-weather-forecast-card ${getForecastToneClass(forecastText)}" role="listitem">
           <div class="workspace-weather-forecast-card__icon">${getForecastIconMarkup(forecastText)}</div>
+          <div class="workspace-weather-forecast-card__copy">
+            <p class="workspace-weather-forecast-card__day">${escapeHtml(entry?.day || "Unknown")}</p>
+            <p class="workspace-weather-forecast-card__condition">${escapeHtml(forecastText)}</p>
+            <p class="workspace-weather-forecast-card__date">${escapeHtml(formatDateLabel(entry?.date))}</p>
+          </div>
           <p class="workspace-weather-forecast-card__temp">${escapeHtml(temperatureLabel)}</p>
-          <p class="workspace-weather-forecast-card__day">${escapeHtml(entry?.day || "Unknown")}</p>
-          <p class="workspace-weather-forecast-card__date">${escapeHtml(formatDateLabel(entry?.date))}</p>
         </article>
       `;
     })
@@ -819,9 +825,9 @@ const renderTemperatureTrend = (payload) => {
 
   weatherTrendChartElement.innerHTML = `
     <div class="workspace-weather-trend__legend" aria-hidden="true">
-      <span>☀ Sun</span>
-      <span>☁ Cloud</span>
-      <span>🌧 Rain</span>
+      <span>Sun</span>
+      <span>Cloud</span>
+      <span>Rain</span>
     </div>
     <div class="workspace-weather-trend__scroll" role="region" aria-label="24-hour temperature trend">
       <svg
@@ -885,9 +891,12 @@ const renderWeatherFailure = (message) => {
     weatherForecastCardsElement.innerHTML = `
       <article class="workspace-weather-forecast-card" role="listitem">
         <div class="workspace-weather-forecast-card__icon">${getForecastIconMarkup("Cloudy")}</div>
+        <div class="workspace-weather-forecast-card__copy">
+          <p class="workspace-weather-forecast-card__day">No forecast</p>
+          <p class="workspace-weather-forecast-card__condition">Unavailable</p>
+          <p class="workspace-weather-forecast-card__date">Temporarily unavailable</p>
+        </div>
         <p class="workspace-weather-forecast-card__temp">--</p>
-        <p class="workspace-weather-forecast-card__day">No forecast</p>
-        <p class="workspace-weather-forecast-card__date">Temporarily unavailable</p>
       </article>
     `;
   }

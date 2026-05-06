@@ -62,6 +62,8 @@ test("GET /workspace serves the signed-in workspace page", async () => {
   assert.match(html, /workspace-map/);
   assert.match(html, /workspace-stage/);
   assert.match(html, /workspace-signout/);
+  assert.match(html, /workspace-view-libraries/);
+  assert.match(html, /workspace-libraries-grid/);
 });
 
 test("GET /api/map/health returns map API status", async () => {
@@ -91,6 +93,40 @@ test("GET /api/weather/health returns weather API status", async () => {
   assert.equal(payload.ok, true);
   assert.equal(payload.country, "SG");
   assert.equal(typeof payload.defaults?.cacheTtlMs, "number");
+});
+
+test("GET /api/libraries/health returns library API status", async () => {
+  const response = await fetch(`${baseUrl}/api/libraries/health`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.source, "mock");
+  assert.equal(payload.prototype, true);
+  assert.equal(typeof payload.libraries, "number");
+});
+
+test("GET /api/libraries/occupancy returns mock library seat data", async () => {
+  const response = await fetch(`${baseUrl}/api/libraries/occupancy`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.source, "mock");
+  assert.equal(payload.prototype, true);
+  assert.equal(Array.isArray(payload.libraries), true);
+  assert.equal(payload.libraries.length >= 7, true);
+
+  const leeWeeNamLibrary = payload.libraries.find(
+    (library) => library.id === "lee-wee-nam-library"
+  );
+
+  assert.equal(leeWeeNamLibrary.name, "Lee Wee Nam Library");
+  assert.equal(typeof leeWeeNamLibrary.totalSeats, "number");
+  assert.equal(typeof leeWeeNamLibrary.occupiedSeats, "number");
+  assert.equal(typeof leeWeeNamLibrary.availableSeats, "number");
+  assert.equal(typeof leeWeeNamLibrary.occupancyRate, "number");
+  assert.equal(typeof leeWeeNamLibrary.lastUpdated, "string");
 });
 
 test("GET / sends the expected security headers", async () => {
