@@ -1,10 +1,15 @@
 import ntuCampusShuttleSource from "./data/ntu-campus-shuttle.js";
+import fallbackTutorialRoomsSource from "./data/fallback-tutorial-rooms.js";
 
 const LTA_ACCOUNT_KEY = normalizeLtaAccountKey(process.env.LTA_ACCOUNT_KEY);
 const LTA_BASE_URL = "https://datamall2.mytransport.sg/ltaodataservice";
 const ARRIVELAH_BASE_URL = "https://arrivelah2.busrouter.sg/";
 const BUSROUTER_BASE_URL = "https://data.busrouter.sg/v1";
 const NTU_OMNIBUS_BASE_URL = "https://apps.ntu.edu.sg/NTUOmnibus/";
+const MAZEMAP_SEARCH_BASE_URL = "https://search.mazemap.com/search";
+const MAZEMAP_APP_BASE_URL = "https://use.mazemap.com/";
+const MAZEMAP_NTU_CONFIG_TAG = "ntu-sg";
+const MAZEMAP_NTU_MAIN_CAMPUS_ID = Number(process.env.MAZEMAP_NTU_MAIN_CAMPUS_ID || 2123);
 
 const PUBLIC_BUS_SERVICES = ["179", "199"];
 const CAMPUS_SHUTTLE_SERVICES = Object.keys(ntuCampusShuttleSource.services);
@@ -15,6 +20,9 @@ const UPSTREAM_TIMEOUT_MS = Number(process.env.UPSTREAM_TIMEOUT_MS || 5000);
 const STATIC_CACHE_TTL_MS = Number(process.env.STATIC_CACHE_TTL_MS || 12 * 60 * 60 * 1000);
 const NTU_OMNIBUS_MODULE_VERSION_TTL_MS = Number(
   process.env.NTU_OMNIBUS_MODULE_VERSION_TTL_MS || 30 * 60 * 1000
+);
+const MAZEMAP_ROOM_CACHE_TTL_MS = Number(
+  process.env.MAZEMAP_ROOM_CACHE_TTL_MS || 6 * 60 * 60 * 1000
 );
 const CAMPUS_ESTIMATED_SPEED_METERS_PER_MINUTE = Number(
   process.env.CAMPUS_ESTIMATED_SPEED_METERS_PER_MINUTE || 230
@@ -34,6 +42,19 @@ const NTU_VIEW = {
   },
   zoom: 14.7
 };
+
+const TUTORIAL_ROOM_VIEW = {
+  center: {
+    lat: 1.3457,
+    lng: 103.6818
+  },
+  zoom: 16
+};
+
+const WALKING_SPEED_METERS_PER_SECOND = 1.35;
+const MAZEMAP_ROOM_SEARCH_QUERIES = ["Tutorial Room", "TR"];
+const MAZEMAP_ROOM_SEARCH_PAGE_SIZE = 100;
+const MAZEMAP_ROOM_SEARCH_MAX_PAGES = 5;
 
 const SERVICE_COLORS = {
   "179": "#ff4fa3",
@@ -87,6 +108,12 @@ const routeCache = {
   pending: null
 };
 
+const tutorialRoomCache = {
+  data: null,
+  fetchedAt: 0,
+  pending: null
+};
+
 const ntuOmnibusModuleVersionCache = {
   value: null,
   fetchedAt: 0,
@@ -108,9 +135,104 @@ export function registerMapApiRoutes(app) {
       ok: true,
       configured: Boolean(LTA_ACCOUNT_KEY),
       services: SERVICES,
+      tutorialRooms: tutorialRoomCache.data?.rooms?.length || fallbackTutorialRoomsSource.length,
+      tutorialRoomSource: "mazemap-search",
       center: NTU_VIEW.center,
       zoom: NTU_VIEW.zoom
     });
+  });
+
+  app.get("/api/map/tutorial-rooms", async (req, res) => {
+    try {
+      const searchQuery = String(req.query.q || "").trim().toLowerCase();
+      const zoneFilter = String(req.query.zone || "").trim().toLowerCase();
+      const dataset = await getTutorialRoomsDataset();
+
+      const rooms = dataset.rooms.filter((room) => {
+        const matchesSearch =
+          !searchQuery ||
+          [
+            room.code,
+            room.name,
+            room.building,
+            room.zone,
+            room.floor,
+            room.identifier,
+            ...room.aliases
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(searchQuery);
+        const matchesZone = !zoneFilter || room.zone.toLowerCase() === zoneFilter;
+
+        return matchesSearch && matchesZone;
+      });
+
+      res.json({
+        ok: true,
+        source: dataset.source,
+        dataProvider: "mazemap-search",
+        mapProvider: "mazemap-embedded",
+        center: TUTORIAL_ROOM_VIEW.center,
+        zoom: TUTORIAL_ROOM_VIEW.zoom,
+        fetchedAt: dataset.fetchedAt,
+        rooms
+      });
+    } catch (error) {
+      handleApiError(res, error);
+    }
+  });
+
+  app.get("/api/map/tutorial-rooms/directions", async (req, res) => {
+    try {
+      const roomId = String(req.query.roomId || "").trim();
+      const fromLat = Number(req.query.fromLat);
+      const fromLng = Number(req.query.fromLng);
+      const dataset = await getTutorialRoomsDataset();
+      const room = dataset.rooms.find((room) => room.id === roomId);
+
+      if (!room) {
+        throw new ApiError(404, `No tutorial room exists for id ${roomId}.`);
+      }
+
+      if (!Number.isFinite(fromLat) || !Number.isFinite(fromLng)) {
+        throw new ApiError(400, "fromLat and fromLng are required for directions.");
+      }
+
+      const distanceMeters = getDistanceMeters(fromLat, fromLng, room.lat, room.lng);
+      const durationSeconds = Math.max(
+        Math.round(distanceMeters / WALKING_SPEED_METERS_PER_SECOND),
+        30
+      );
+
+      res.json({
+        ok: true,
+        source: dataset.source,
+        provider: "straight-line-campus-walk",
+        distanceMeters: Math.round(distanceMeters),
+        durationSeconds,
+        geometry: [
+          {
+            lat: fromLat,
+            lng: fromLng
+          },
+          {
+            lat: room.lat,
+            lng: room.lng
+          }
+        ],
+        room,
+        mazeMapNavigationUrl: getMazeMapNavigationUrl(room, {
+          lat: fromLat,
+          lng: fromLng,
+          zLevel: 0
+        }),
+        mazeMapUrl: room.mazeMapUrl || getMazeMapPoiUrl(room),
+        googleMapsUrl: getGoogleMapsDirectionsUrl({ lat: fromLat, lng: fromLng }, room)
+      });
+    } catch (error) {
+      handleApiError(res, error);
+    }
   });
 
   app.get("/api/map/routes", async (_req, res) => {
@@ -221,6 +343,410 @@ export function registerMapApiRoutes(app) {
       handleApiError(res, error);
     }
   });
+}
+
+async function getTutorialRoomsDataset() {
+  const cacheAge = Date.now() - tutorialRoomCache.fetchedAt;
+
+  if (tutorialRoomCache.data && cacheAge < MAZEMAP_ROOM_CACHE_TTL_MS) {
+    return tutorialRoomCache.data;
+  }
+
+  if (tutorialRoomCache.pending) {
+    return tutorialRoomCache.pending;
+  }
+
+  tutorialRoomCache.pending = hydrateTutorialRoomsDataset()
+    .then((dataset) => {
+      tutorialRoomCache.data = dataset;
+      tutorialRoomCache.fetchedAt = Date.now();
+      return dataset;
+    })
+    .finally(() => {
+      tutorialRoomCache.pending = null;
+    });
+
+  return tutorialRoomCache.pending;
+}
+
+async function hydrateTutorialRoomsDataset() {
+  try {
+    const rooms = await fetchMazeMapTutorialRooms();
+
+    if (!rooms.length) {
+      throw new ApiError(502, "MazeMap did not return tutorial room results.");
+    }
+
+    return {
+      source: "mazemap-live",
+      fetchedAt: new Date().toISOString(),
+      rooms
+    };
+  } catch {
+    return {
+      source: "mazemap-fallback",
+      fetchedAt: new Date().toISOString(),
+      rooms: getFallbackTutorialRooms()
+    };
+  }
+}
+
+async function fetchMazeMapTutorialRooms() {
+  const roomsByPoiId = new Map();
+
+  for (const query of MAZEMAP_ROOM_SEARCH_QUERIES) {
+    for (let page = 0; page < MAZEMAP_ROOM_SEARCH_MAX_PAGES; page += 1) {
+      const start = page * MAZEMAP_ROOM_SEARCH_PAGE_SIZE;
+      const results = await fetchMazeMapSearchPage(query, start);
+
+      for (const result of results) {
+        if (!isMazeMapTutorialRoomResult(result)) {
+          continue;
+        }
+
+        const room = normalizeMazeMapTutorialRoom(result);
+
+        if (room) {
+          roomsByPoiId.set(room.poiId, room);
+        }
+      }
+
+      if (results.length < MAZEMAP_ROOM_SEARCH_PAGE_SIZE) {
+        break;
+      }
+    }
+  }
+
+  return Array.from(roomsByPoiId.values()).sort(compareTutorialRooms);
+}
+
+async function fetchMazeMapSearchPage(query, start) {
+  const params = new URLSearchParams({
+    q: query,
+    rows: String(MAZEMAP_ROOM_SEARCH_PAGE_SIZE),
+    start: String(start),
+    withpois: "true",
+    withbuilding: "true",
+    withtype: "true",
+    withcampus: "true",
+    campusid: String(MAZEMAP_NTU_MAIN_CAMPUS_ID)
+  });
+
+  let response;
+
+  try {
+    response = await fetch(`${MAZEMAP_SEARCH_BASE_URL}/equery/?${params.toString()}`, {
+      headers: {
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
+  } catch (error) {
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      throw new ApiError(504, "MazeMap took too long to return tutorial rooms.");
+    }
+
+    throw new ApiError(502, "MazeMap tutorial rooms could not be reached.", String(error));
+  }
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new ApiError(
+      502,
+      "MazeMap tutorial room search could not be loaded.",
+      detail.slice(0, 300)
+    );
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload.result) ? payload.result : [];
+}
+
+function isMazeMapTutorialRoomResult(result) {
+  if (!result?.poiId || result.deleted) {
+    return false;
+  }
+
+  if (Number(result.campusId) !== MAZEMAP_NTU_MAIN_CAMPUS_ID) {
+    return false;
+  }
+
+  const [lng, lat] = getMazeMapLngLat(result);
+
+  if (!isSingaporeCoordinate(lat, lng)) {
+    return false;
+  }
+
+  const names = getMazeMapRoomNames(result);
+  const types = [
+    ...(Array.isArray(result.typeNames) ? result.typeNames : []),
+    ...(Array.isArray(result.priorityTypeNames) ? result.priorityTypeNames : []),
+    ...(Array.isArray(result.dispTypeNames) ? result.dispTypeNames : [])
+  ].map(stripMarkup);
+
+  return (
+    types.some((type) => /tutorial\s+room/i.test(type)) ||
+    names.some((name) => /tutorial\s+room/i.test(name)) ||
+    names.some((name) => /\bTR\s*\+?\s*[0-9][A-Z0-9.-]*\b/i.test(name))
+  );
+}
+
+function normalizeMazeMapTutorialRoom(result) {
+  const [lng, lat] = getMazeMapLngLat(result);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  const names = getMazeMapRoomNames(result);
+  const title = names[0] || `Tutorial Room ${result.poiId}`;
+  const code = extractTutorialRoomCode(names, result.identifier);
+  const building = getFirstCleanValue(result.dispBldNames) || stripMarkup(result.buildingName);
+  const floor = formatMazeMapFloor(result.zName || result.floorName, result.zValue ?? result.z);
+  const zone = extractParenthetical(title) || stripMarkup(result.campusName) || "NTU";
+  const aliases = uniqueStrings([
+    result.identifier,
+    ...names,
+    ...(Array.isArray(result.typeNames) ? result.typeNames : []),
+    ...(Array.isArray(result.priorityTypeNames) ? result.priorityTypeNames : [])
+  ])
+    .map(stripMarkup)
+    .filter(Boolean)
+    .filter((alias) => alias !== title && alias !== code);
+
+  const room = {
+    id: `mazemap-poi-${result.poiId}`,
+    poiId: Number(result.poiId),
+    code,
+    name: title,
+    building: building || stripMarkup(result.campusName) || "NTU",
+    zone,
+    floor,
+    lat,
+    lng,
+    zLevel: Number(result.zValue ?? result.z),
+    identifier: result.identifier ? stripMarkup(result.identifier) : "",
+    campusId: Number(result.campusId),
+    floorId: Number(result.floorId),
+    buildingId: Number(result.buildingId || result.bldId),
+    aliases
+  };
+
+  return {
+    ...room,
+    mazeMapUrl: getMazeMapPoiUrl(room),
+    mazeMapNavigationUrl: getMazeMapNavigationUrl(room)
+  };
+}
+
+function getFallbackTutorialRooms() {
+  return fallbackTutorialRoomsSource.map((room) => {
+    const normalized = {
+      id: String(room.id),
+      code: String(room.code),
+      name: String(room.name),
+      building: String(room.building),
+      zone: String(room.zone),
+      floor: String(room.floor),
+      lat: Number(room.lat),
+      lng: Number(room.lng),
+      zLevel: null,
+      identifier: "",
+      campusId: MAZEMAP_NTU_MAIN_CAMPUS_ID,
+      poiId: null,
+      aliases: Array.isArray(room.aliases) ? room.aliases.map(String) : []
+    };
+
+    return {
+      ...normalized,
+      mazeMapUrl: getMazeMapPoiUrl(normalized),
+      mazeMapNavigationUrl: getMazeMapNavigationUrl(normalized)
+    };
+  });
+}
+
+function getMazeMapRoomNames(result) {
+  return uniqueStrings([
+    result.title,
+    result.dispTitle,
+    ...(Array.isArray(result.poiNames) ? result.poiNames : []),
+    ...(Array.isArray(result.dispPoiNames) ? result.dispPoiNames : [])
+  ])
+    .map(stripMarkup)
+    .filter(Boolean);
+}
+
+function getMazeMapLngLat(result) {
+  const coordinates = result?.geometry?.coordinates || result?.point?.coordinates || [];
+  return [Number(coordinates[0]), Number(coordinates[1])];
+}
+
+function getFirstCleanValue(values) {
+  if (!Array.isArray(values)) {
+    return "";
+  }
+
+  return values.map(stripMarkup).find(Boolean) || "";
+}
+
+function extractTutorialRoomCode(names, identifier) {
+  const candidates = uniqueStrings([identifier, ...names]).map(stripMarkup).filter(Boolean);
+
+  for (const candidate of candidates) {
+    const plusMatch = candidate.match(/\b(?:TR|Tutorial Room)\s*\+\s*([0-9][A-Z0-9.-]*)/i);
+
+    if (plusMatch) {
+      return `TR+${plusMatch[1].toUpperCase()}`;
+    }
+
+    const regularMatch = candidate.match(
+      /\b(?:TR\s*|Tutorial Room\s+)([0-9][A-Z0-9.-]*)\b/i
+    );
+
+    if (regularMatch) {
+      return `TR ${regularMatch[1].toUpperCase()}`;
+    }
+  }
+
+  return candidates[0] || "TR";
+}
+
+function formatMazeMapFloor(floorName, zLevel) {
+  const cleanFloorName = stripMarkup(floorName);
+
+  if (cleanFloorName) {
+    return /^-?\d+(\.\d+)?$/.test(cleanFloorName) ? `L${cleanFloorName}` : cleanFloorName;
+  }
+
+  const numericZLevel = Number(zLevel);
+
+  if (!Number.isFinite(numericZLevel)) {
+    return "Floor pending";
+  }
+
+  return numericZLevel < 0 ? `B${Math.abs(numericZLevel)}` : `L${numericZLevel}`;
+}
+
+function extractParenthetical(value) {
+  const match = stripMarkup(value).match(/\(([^)]+)\)\s*$/);
+  return match ? match[1].trim() : "";
+}
+
+function stripMarkup(value) {
+  return String(value || "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function uniqueStrings(values) {
+  const seen = new Set();
+  const result = [];
+
+  for (const value of values) {
+    const normalized = stripMarkup(value);
+    const key = normalized.toLowerCase();
+
+    if (!normalized || seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(normalized);
+  }
+
+  return result;
+}
+
+function compareTutorialRooms(a, b) {
+  return (
+    String(a.building).localeCompare(String(b.building), "en", { sensitivity: "base" }) ||
+    String(a.floor).localeCompare(String(b.floor), "en", { numeric: true }) ||
+    String(a.code).localeCompare(String(b.code), "en", { numeric: true })
+  );
+}
+
+function isSingaporeCoordinate(lat, lng) {
+  return lat >= 1.2 && lat <= 1.5 && lng >= 103.55 && lng <= 104.05;
+}
+
+function getMazeMapPoiUrl(room) {
+  const url = new URL(MAZEMAP_APP_BASE_URL);
+  url.searchParams.set("config", MAZEMAP_NTU_CONFIG_TAG);
+  url.searchParams.set("campusid", String(room.campusId || MAZEMAP_NTU_MAIN_CAMPUS_ID));
+
+  if (room.poiId) {
+    url.searchParams.set("sharepoitype", "poi");
+    url.searchParams.set("sharepoi", String(room.poiId));
+  } else {
+    url.searchParams.set(
+      "center",
+      `${Number(room.lng).toFixed(6)},${Number(room.lat).toFixed(6)}`
+    );
+  }
+
+  if (Number.isFinite(Number(room.zLevel))) {
+    url.searchParams.set("zlevel", String(Number(room.zLevel)));
+  }
+
+  url.searchParams.set("zoom", "18");
+  return url.toString();
+}
+
+function getMazeMapNavigationUrl(room, start = null) {
+  const url = new URL(MAZEMAP_APP_BASE_URL);
+  url.searchParams.set("config", MAZEMAP_NTU_CONFIG_TAG);
+  url.searchParams.set("campusid", String(room.campusId || MAZEMAP_NTU_MAIN_CAMPUS_ID));
+  url.searchParams.set("positioning", "true");
+
+  if (start && Number.isFinite(Number(start.lat)) && Number.isFinite(Number(start.lng))) {
+    const startZLevel = Number.isFinite(Number(start.zLevel)) ? Number(start.zLevel) : 0;
+    url.searchParams.set("starttype", "point");
+    url.searchParams.set(
+      "start",
+      `${Number(start.lng).toFixed(6)},${Number(start.lat).toFixed(6)},${startZLevel}`
+    );
+  }
+
+  if (room.poiId) {
+    url.searchParams.set("desttype", "poi");
+    url.searchParams.set("dest", String(room.poiId));
+  } else if (room.identifier) {
+    url.searchParams.set("desttype", "identifier");
+    url.searchParams.set("dest", room.identifier);
+  } else {
+    const zLevel = Number.isFinite(Number(room.zLevel)) ? Number(room.zLevel) : 0;
+    url.searchParams.set("desttype", "point");
+    url.searchParams.set(
+      "dest",
+      `${Number(room.lng).toFixed(6)},${Number(room.lat).toFixed(6)},${zLevel}`
+    );
+  }
+
+  if (Number.isFinite(Number(room.zLevel))) {
+    url.searchParams.set("zlevel", String(Number(room.zLevel)));
+  }
+
+  url.searchParams.set("zoom", "18");
+  return url.toString();
+}
+
+function getGoogleMapsDirectionsUrl(start, room) {
+  const origin = `${Number(start.lat).toFixed(6)},${Number(start.lng).toFixed(6)}`;
+  const destination = `${Number(room.lat).toFixed(6)},${Number(room.lng).toFixed(6)}`;
+  const params = new URLSearchParams({
+    api: "1",
+    origin,
+    destination,
+    travelmode: "walking"
+  });
+
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
 async function getRouteDataset() {

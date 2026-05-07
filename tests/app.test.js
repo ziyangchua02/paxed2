@@ -65,6 +65,8 @@ test("GET /workspace serves the signed-in workspace page", async () => {
   assert.match(html, /workspace-stage/);
   assert.match(html, /workspace-signout/);
   assert.match(html, /workspace-view-libraries/);
+  assert.match(html, /workspace-view-rooms/);
+  assert.match(html, /workspace-rooms-map/);
   assert.match(html, /workspace-libraries-grid/);
 });
 
@@ -75,6 +77,53 @@ test("GET /api/map/health returns map API status", async () => {
   assert.equal(response.status, 200);
   assert.equal(payload.ok, true);
   assert.equal(Array.isArray(payload.services), true);
+  assert.equal(typeof payload.tutorialRooms, "number");
+});
+
+test("GET /api/map/tutorial-rooms returns MazeMap-backed room map data", async () => {
+  const response = await fetch(`${baseUrl}/api/map/tutorial-rooms`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.dataProvider, "mazemap-search");
+  assert.equal(payload.mapProvider, "mazemap-embedded");
+  assert.match(payload.source, /^mazemap-/);
+  assert.equal(Array.isArray(payload.rooms), true);
+  assert.equal(payload.rooms.length >= 10, true);
+
+  const sampleRoom = payload.rooms.find((room) => room.mazeMapUrl);
+
+  assert.equal(typeof sampleRoom.id, "string");
+  assert.equal(typeof sampleRoom.code, "string");
+  assert.equal(typeof sampleRoom.name, "string");
+  assert.equal(typeof sampleRoom.building, "string");
+  assert.equal(typeof sampleRoom.lat, "number");
+  assert.equal(typeof sampleRoom.lng, "number");
+  assert.match(sampleRoom.mazeMapUrl, /https:\/\/use\.mazemap\.com\//);
+  assert.match(sampleRoom.mazeMapNavigationUrl, /desttype=/);
+});
+
+test("GET /api/map/tutorial-rooms/directions returns walking route to a tutorial room", async () => {
+  const roomsResponse = await fetch(`${baseUrl}/api/map/tutorial-rooms`);
+  const roomsPayload = await roomsResponse.json();
+  const roomId = encodeURIComponent(roomsPayload.rooms[0].id);
+  const response = await fetch(
+    `${baseUrl}/api/map/tutorial-rooms/directions?roomId=${roomId}&fromLat=1.345640&fromLng=103.680780`
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.provider, "straight-line-campus-walk");
+  assert.equal(Array.isArray(payload.geometry), true);
+  assert.equal(payload.geometry.length, 2);
+  assert.equal(typeof payload.distanceMeters, "number");
+  assert.equal(typeof payload.durationSeconds, "number");
+  assert.match(payload.mazeMapNavigationUrl, /starttype=point/);
+  assert.match(payload.mazeMapNavigationUrl, /desttype=/);
+  assert.match(payload.mazeMapUrl, /https:\/\/use\.mazemap\.com\//);
+  assert.match(payload.googleMapsUrl, /https:\/\/www\.google\.com\/maps\/dir/);
 });
 
 test("GET /api/drive/health returns drive API status", async () => {
@@ -174,4 +223,11 @@ test("GET / CSP allows Leaflet and OpenStreetMap map assets", async () => {
   assert.match(cspHeader, /script-src[^;]*https:\/\/unpkg\.com/);
   assert.match(cspHeader, /style-src[^;]*https:\/\/unpkg\.com/);
   assert.match(cspHeader, /img-src[^;]*https:\/\/tile\.openstreetmap\.org/);
+});
+
+test("GET /workspace CSP allows embedded MazeMap room navigation", async () => {
+  const response = await fetch(`${baseUrl}/workspace`);
+  const cspHeader = response.headers.get("content-security-policy") ?? "";
+
+  assert.match(cspHeader, /frame-src[^;]*https:\/\/use\.mazemap\.com/);
 });

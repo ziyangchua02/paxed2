@@ -44,6 +44,7 @@ export function createApp() {
             "'self'",
             "https://accounts.google.com",
             "https://apis.google.com",
+            "https://use.mazemap.com",
             "https://*.firebaseapp.com",
             "https://*.web.app"
           ],

@@ -5,10 +5,12 @@ const statusElement = document.querySelector("#workspace-status");
 const busesViewButton = document.querySelector("#workspace-view-buses");
 const driveViewButton = document.querySelector("#workspace-view-drive");
 const weatherViewButton = document.querySelector("#workspace-view-weather");
+const roomsViewButton = document.querySelector("#workspace-view-rooms");
 const librariesViewButton = document.querySelector("#workspace-view-libraries");
 const busDashboardElement = document.querySelector("#workspace-buses");
 const driveDashboardElement = document.querySelector("#workspace-drive");
 const weatherDashboardElement = document.querySelector("#workspace-weather");
+const roomsDashboardElement = document.querySelector("#workspace-rooms");
 const librariesDashboardElement = document.querySelector("#workspace-libraries");
 const mobilePanelQuery = window.matchMedia("(max-width: 680px)");
 
@@ -17,6 +19,7 @@ const WORKSPACE_VIEW_TITLES = {
   buses: "Paxed | Workspace",
   drive: "Paxed | Drive",
   weather: "Paxed | Weather",
+  rooms: "Paxed | Tutorial Rooms",
   libraries: "Paxed | Our Locations"
 };
 
@@ -43,12 +46,16 @@ const redirectToAuthPage = () => {
 
 const setDashboardView = (viewName = "buses") => {
   const normalizedViewName =
-    viewName === "drive" || viewName === "weather" || viewName === "libraries"
+    viewName === "drive" ||
+    viewName === "weather" ||
+    viewName === "rooms" ||
+    viewName === "libraries"
       ? viewName
       : "buses";
   const isBusView = normalizedViewName === "buses";
   const isDriveView = normalizedViewName === "drive";
   const isWeatherView = normalizedViewName === "weather";
+  const isRoomsView = normalizedViewName === "rooms";
   const isLibrariesView = normalizedViewName === "libraries";
 
   if (busDashboardElement) {
@@ -61,6 +68,10 @@ const setDashboardView = (viewName = "buses") => {
 
   if (weatherDashboardElement) {
     weatherDashboardElement.hidden = !isWeatherView;
+  }
+
+  if (roomsDashboardElement) {
+    roomsDashboardElement.hidden = !isRoomsView;
   }
 
   if (librariesDashboardElement) {
@@ -82,6 +93,11 @@ const setDashboardView = (viewName = "buses") => {
     weatherViewButton.setAttribute("aria-pressed", String(isWeatherView));
   }
 
+  if (roomsViewButton) {
+    roomsViewButton.classList.toggle("is-active", isRoomsView);
+    roomsViewButton.setAttribute("aria-pressed", String(isRoomsView));
+  }
+
   if (librariesViewButton) {
     librariesViewButton.classList.toggle("is-active", isLibrariesView);
     librariesViewButton.setAttribute("aria-pressed", String(isLibrariesView));
@@ -90,6 +106,7 @@ const setDashboardView = (viewName = "buses") => {
   document.body.classList.toggle("is-bus-view", isBusView);
   document.body.classList.toggle("is-drive-view", isDriveView);
   document.body.classList.toggle("is-weather-view", isWeatherView);
+  document.body.classList.toggle("is-rooms-view", isRoomsView);
   document.body.classList.toggle("is-libraries-view", isLibrariesView);
   document.title = WORKSPACE_VIEW_TITLES[normalizedViewName] || WORKSPACE_VIEW_TITLES.buses;
 
@@ -109,7 +126,13 @@ const setDashboardView = (viewName = "buses") => {
 };
 
 const setupDashboardViewSwitcher = () => {
-  if (!busesViewButton || !driveViewButton || !weatherViewButton || !librariesViewButton) {
+  if (
+    !busesViewButton ||
+    !driveViewButton ||
+    !weatherViewButton ||
+    !roomsViewButton ||
+    !librariesViewButton
+  ) {
     return;
   }
 
@@ -123,6 +146,10 @@ const setupDashboardViewSwitcher = () => {
 
   weatherViewButton.addEventListener("click", () => {
     setDashboardView("weather");
+  });
+
+  roomsViewButton.addEventListener("click", () => {
+    setDashboardView("rooms");
   });
 
   librariesViewButton.addEventListener("click", () => {

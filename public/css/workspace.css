@@ -5151,3 +5151,487 @@ body.is-drive-view .workspace-drive-details__metric {
 body.is-drive-view .workspace-drive-card.is-selected {
   box-shadow: inset 3px 0 0 rgba(216, 180, 254, 0.72);
 }
+
+/* Tutorial rooms map. */
+body.is-rooms-view {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(144, 97, 249, 0.3), transparent 34%),
+    linear-gradient(180deg, #261241 0%, #11091f 42%, #050507 100%);
+}
+
+body.is-rooms-view .workspace-stage {
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 104px 18px 24px;
+  place-items: start center;
+  overflow: hidden;
+}
+
+body.is-rooms-view .workspace-header,
+body.is-rooms-view .workspace-nav {
+  border-color: rgba(168, 85, 247, 0.24);
+}
+
+body.is-rooms-view .workspace-nav__item.is-active {
+  border-color: rgba(216, 180, 254, 0.72);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(124, 58, 237, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(168, 85, 247, 0.26);
+}
+
+.workspace-rooms {
+  width: min(1080px, 100%);
+  height: 100%;
+  min-height: 0;
+}
+
+body.is-rooms-view .workspace-layout--rooms {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(318px, 386px);
+  gap: 18px 20px;
+  align-items: stretch;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* Full-width rooms layout (no right-side panel) */
+body.is-rooms-view .workspace-layout--rooms.workspace-layout--rooms--full {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+body.is-rooms-view .workspace-layout--rooms::before {
+  display: none;
+}
+
+body.is-rooms-view .workspace-map--rooms {
+  height: min(68vh, 720px);
+  min-height: 0;
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(18, 10, 32, 0.72), rgba(6, 5, 12, 0.58)),
+    rgba(5, 5, 7, 0.42);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+body.is-rooms-view .workspace-map--rooms::after {
+  display: none;
+}
+
+.workspace-room-mazemap-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: rgba(5, 5, 7, 0.72);
+}
+
+body.is-rooms-view .workspace-rooms-panel {
+  width: 100%;
+  height: min(68vh, 720px);
+  max-height: min(68vh, 720px);
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+body.is-rooms-view .workspace-rooms-panel::before {
+  display: none;
+}
+
+.workspace-rooms-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.workspace-rooms__locate {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 30px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.14);
+  color: rgba(237, 233, 254, 0.94);
+  font-size: 0.62rem;
+  font-weight: 720;
+  line-height: 1;
+}
+
+.workspace-rooms__locate:disabled {
+  cursor: wait;
+  opacity: 0.64;
+}
+
+.workspace-rooms__search-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.workspace-rooms__search {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.94);
+  font: 650 0.74rem "Onest", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  box-shadow: none;
+}
+
+.workspace-rooms__search::placeholder {
+  color: rgba(216, 180, 254, 0.48);
+}
+
+.workspace-rooms__search:focus {
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+}
+
+.workspace-rooms__list {
+  min-height: 0;
+  padding-right: 3px;
+}
+
+.workspace-room-card {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.032);
+  box-shadow: none;
+}
+
+.workspace-room-card:hover,
+.workspace-room-card:focus-visible {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.052);
+}
+
+.workspace-room-card.is-selected {
+  background: rgba(168, 85, 247, 0.14);
+  box-shadow: inset 3px 0 0 rgba(216, 180, 254, 0.72);
+}
+
+.workspace-room-details {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(18, 10, 32, 0.72), rgba(6, 5, 12, 0.58)),
+    rgba(5, 5, 7, 0.38);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.workspace-room-details__header {
+  display: grid;
+  gap: 5px;
+}
+
+.workspace-room-details__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.workspace-room-details .workspace-drive-details__metric {
+  border: 0;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.workspace-room-details__route {
+  margin: 0;
+  color: rgba(216, 180, 254, 0.72);
+  font-size: 0.62rem;
+  line-height: 1.32;
+}
+
+.workspace-room-details__directions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(124, 58, 237, 0.88));
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 740;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.workspace-room-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px 999px 999px 4px;
+  background: rgba(168, 85, 247, 0.9);
+  color: #fff;
+  font-family: "Onest", "Segoe UI", sans-serif;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow:
+    0 10px 22px rgba(20, 8, 32, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.workspace-room-marker.is-selected {
+  min-width: 50px;
+  height: 28px;
+  background: linear-gradient(135deg, rgba(216, 180, 254, 0.98), rgba(168, 85, 247, 0.94));
+  color: #11091f;
+}
+
+@media (max-width: 680px) {
+  body.is-rooms-view {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body.is-rooms-view .workspace-stage {
+    height: auto;
+    min-height: 100dvh;
+    padding: 88px 12px 16px;
+    overflow: visible;
+  }
+
+  .workspace-rooms {
+    height: auto;
+  }
+
+  body.is-rooms-view .workspace-layout--rooms {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    height: auto;
+  }
+
+  body.is-rooms-view .workspace-map--rooms {
+    min-height: 230px;
+    height: clamp(230px, 34dvh, 300px);
+  }
+
+  body.is-rooms-view .workspace-rooms-panel {
+    height: auto;
+    max-height: none;
+  }
+
+  .workspace-room-details__metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Rooms-inspired style pass across all logged-in tabs. */
+body.is-bus-view,
+body.is-drive-view,
+body.is-weather-view,
+body.is-libraries-view,
+body.is-rooms-view {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(144, 97, 249, 0.3), transparent 34%),
+    linear-gradient(180deg, #261241 0%, #11091f 42%, #050507 100%);
+}
+
+body.is-bus-view .workspace-header,
+body.is-drive-view .workspace-header,
+body.is-weather-view .workspace-header,
+body.is-libraries-view .workspace-header,
+body.is-rooms-view .workspace-header,
+body.is-bus-view .workspace-nav,
+body.is-drive-view .workspace-nav,
+body.is-weather-view .workspace-nav,
+body.is-libraries-view .workspace-nav,
+body.is-rooms-view .workspace-nav {
+  border-color: rgba(168, 85, 247, 0.24);
+}
+
+body.is-bus-view .workspace-nav__item.is-active,
+body.is-drive-view .workspace-nav__item.is-active,
+body.is-weather-view .workspace-nav__item.is-active,
+body.is-libraries-view .workspace-nav__item.is-active,
+body.is-rooms-view .workspace-nav__item.is-active {
+  border-color: rgba(216, 180, 254, 0.72);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(124, 58, 237, 0.88));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(168, 85, 247, 0.26);
+}
+
+body.is-bus-view .workspace-map,
+body.is-drive-view .workspace-map,
+body.is-rooms-view .workspace-map {
+  border: 0;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(18, 10, 32, 0.72), rgba(6, 5, 12, 0.58)),
+    rgba(5, 5, 7, 0.42);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+body.is-bus-view .workspace-map::after,
+body.is-drive-view .workspace-map::after,
+body.is-rooms-view .workspace-map::after {
+  display: none;
+}
+
+body.is-bus-view .workspace-services,
+body.is-drive-view .workspace-services,
+body.is-rooms-view .workspace-services {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+body.is-bus-view .workspace-services::before,
+body.is-drive-view .workspace-services::before,
+body.is-rooms-view .workspace-services::before {
+  display: none;
+}
+
+body.is-bus-view .workspace-services__filters,
+body.is-bus-view .workspace-nearest,
+body.is-drive-view .workspace-drive-details,
+body.is-drive-view .workspace-drive-details__metric {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-services__action,
+body.is-bus-view .workspace-panel-toggle,
+body.is-drive-view .workspace-drive__notice,
+body.is-drive-view .workspace-drive__notice--sync {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.14);
+  color: rgba(237, 233, 254, 0.94);
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-nearest-card,
+body.is-drive-view .workspace-drive-card,
+body.is-rooms-view .workspace-room-card,
+body.is-weather-view .workspace-weather-forecast-card,
+body.is-weather-view .workspace-weather-highlight-card {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+body.is-bus-view .workspace-nearest-card:hover,
+body.is-bus-view .workspace-nearest-card:focus-visible,
+body.is-drive-view .workspace-drive-card:hover,
+body.is-drive-view .workspace-drive-card:focus-visible,
+body.is-rooms-view .workspace-room-card:hover,
+body.is-rooms-view .workspace-room-card:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+body.is-drive-view .workspace-drive-card.is-selected,
+body.is-rooms-view .workspace-room-card.is-selected {
+  background: rgba(168, 85, 247, 0.14);
+  box-shadow: inset 3px 0 0 rgba(216, 180, 254, 0.72);
+}
+
+body.is-weather-view .workspace-weather__heading,
+body.is-weather-view .workspace-weather-showcase__status,
+body.is-weather-view .workspace-weather-now,
+body.is-weather-view .workspace-weather-forecast-panel,
+body.is-weather-view .workspace-weather-highlights,
+body.is-weather-view .workspace-weather-trend,
+body.is-libraries-view .workspace-library-card__content,
+body.is-rooms-view .workspace-room-details {
+  border: 0;
+  background:
+    linear-gradient(180deg, rgba(18, 10, 32, 0.72), rgba(6, 5, 12, 0.58)),
+    rgba(5, 5, 7, 0.42);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+body.is-weather-view .workspace-weather-now__glyph,
+body.is-weather-view .workspace-weather-now__label,
+body.is-weather-view .workspace-weather-forecast-card__icon,
+body.is-weather-view .workspace-weather-highlight-card__icon {
+  border: 0;
+  background: rgba(168, 85, 247, 0.14);
+  color: rgba(237, 233, 254, 0.94);
+  box-shadow: none;
+}
+
+body.is-weather-view .workspace-weather__notice {
+  border: 0;
+  background: rgba(168, 85, 247, 0.14);
+  color: rgba(237, 233, 254, 0.94);
+}
+
+body.is-libraries-view .workspace-library-card {
+  border: 0;
+  background: rgba(5, 5, 7, 0.42);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+body.is-libraries-view .workspace-library-card__progress-track {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+body.is-bus-view .workspace-services__eyebrow,
+body.is-drive-view .workspace-services__eyebrow,
+body.is-weather-view .workspace-weather-now__eyebrow,
+body.is-weather-view .workspace-weather-showcase__status-label,
+body.is-weather-view .workspace-weather-highlight-card__title,
+body.is-rooms-view .workspace-services__eyebrow,
+body.is-libraries-view .workspace-library-card__capacity > span {
+  color: rgba(216, 180, 254, 0.76);
+}

@@ -15,7 +15,7 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="./css/workspace.css?v=transport-style-1" />
+    <link rel="stylesheet" href="./css/workspace.css?v=rooms-map-5" />
   </head>
   <body>
     <header class="workspace-header">
@@ -68,6 +68,23 @@
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M6.5 16.2h9.8a3.3 3.3 0 1 0-.7-6.5 4.7 4.7 0 0 0-9 .9A2.9 2.9 0 0 0 6.5 16.2Z" />
               <path d="M5.5 19.2h7.8M15.3 19.2h3.2" />
+            </svg>
+          </span>
+        </button>
+        <button
+          class="workspace-nav__item"
+          type="button"
+          id="workspace-view-rooms"
+          aria-label="Tutorial rooms map"
+          aria-pressed="false"
+          title="Tutorial Rooms"
+        >
+          <span class="workspace-nav__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M8.2 4.8 4 6.9v12.3l4.2-2.1 7.6 2.1 4.2-2.1V4.8l-4.2 2.1-7.6-2.1Z" />
+              <path d="M8.2 4.8v12.3M15.8 6.9v12.3" />
+              <circle cx="12" cy="11.7" r="2" />
+              <path d="M12 13.7v2.6" />
             </svg>
           </span>
         </button>
@@ -372,6 +389,23 @@
       </section>
 
       <section
+        class="workspace-view workspace-view--rooms workspace-rooms"
+        id="workspace-rooms"
+        aria-label="Tutorial rooms map"
+        hidden
+      >
+        <div class="workspace-layout workspace-layout--rooms workspace-layout--rooms--full">
+          <div
+            id="workspace-rooms-map"
+            class="workspace-map workspace-map--rooms"
+            aria-label="Interactive NTU tutorial room map"
+          ></div>
+
+          <!-- Right-side search panel removed: MazeMap provides built-in search. Map now fills full width. -->
+        </div>
+      </section>
+
+      <section
         class="workspace-view workspace-view--libraries workspace-libraries"
         id="workspace-libraries"
         aria-labelledby="workspace-libraries-title"
@@ -404,9 +438,10 @@
       crossorigin=""
     ></script>
     <script type="module" src="./js/auth-map.js"></script>
-    <script type="module" src="./js/workspace.js?v=transport-style-1"></script>
+    <script type="module" src="./js/workspace.js?v=rooms-map-5"></script>
     <script type="module" src="./js/drive-map.js"></script>
-    <script type="module" src="./js/weather-dashboard.js?v=transport-style-1"></script>
-    <script type="module" src="./js/library-dashboard.js?v=transport-style-1"></script>
+    <script type="module" src="./js/tutorial-rooms-map.js?v=rooms-map-5"></script>
+    <script type="module" src="./js/weather-dashboard.js?v=rooms-map-5"></script>
+    <script type="module" src="./js/library-dashboard.js?v=rooms-map-5"></script>
   </body>
 </html>
