@@ -192,57 +192,16 @@ export function registerMapApiRoutes(app) {
     }
   });
 
-  app.get("/api/map/tutorial-rooms/directions", async (req, res) => {
+  const handleTutorialRoomDirectionsRequest = async (req, res) => {
     try {
-      const roomId = String(req.query.roomId || "").trim();
-      const fromLat = Number(req.query.fromLat);
-      const fromLng = Number(req.query.fromLng);
-      const dataset = await getTutorialRoomsDataset();
-      const room = dataset.rooms.find((room) => room.id === roomId);
-
-      if (!room) {
-        throw new ApiError(404, `No tutorial room exists for id ${roomId}.`);
-      }
-
-      if (!Number.isFinite(fromLat) || !Number.isFinite(fromLng)) {
-        throw new ApiError(400, "fromLat and fromLng are required for directions.");
-      }
-
-      const distanceMeters = getDistanceMeters(fromLat, fromLng, room.lat, room.lng);
-      const durationSeconds = Math.max(
-        Math.round(distanceMeters / WALKING_SPEED_METERS_PER_SECOND),
-        30
-      );
-
-      res.json({
-        ok: true,
-        source: dataset.source,
-        provider: "straight-line-campus-walk",
-        distanceMeters: Math.round(distanceMeters),
-        durationSeconds,
-        geometry: [
-          {
-            lat: fromLat,
-            lng: fromLng
-          },
-          {
-            lat: room.lat,
-            lng: room.lng
-          }
-        ],
-        room,
-        mazeMapNavigationUrl: getMazeMapNavigationUrl(room, {
-          lat: fromLat,
-          lng: fromLng,
-          zLevel: 0
-        }),
-        mazeMapUrl: room.mazeMapUrl || getMazeMapPoiUrl(room),
-        googleMapsUrl: getGoogleMapsDirectionsUrl({ lat: fromLat, lng: fromLng }, room)
-      });
+      await sendTutorialRoomDirectionsResponse(res, req.query);
     } catch (error) {
       handleApiError(res, error);
     }
-  });
+  };
+
+  app.get("/api/map/tutorial-room-directions", handleTutorialRoomDirectionsRequest);
+  app.get("/api/map/tutorial-rooms/directions", handleTutorialRoomDirectionsRequest);
 
   app.get("/api/map/routes", async (_req, res) => {
     try {
@@ -271,86 +230,141 @@ export function registerMapApiRoutes(app) {
     }
   });
 
-  app.get("/api/map/stops/:stopCode/arrivals", async (req, res) => {
+  const handleStopArrivalsRequest = async (req, res) => {
     try {
-      const dataset = await getRouteDataset();
-      const stopCode = String(req.params.stopCode || "").trim();
-      const stopMeta = dataset.stopLookup[stopCode];
-
-      if (!stopMeta) {
-        throw new ApiError(404, `No mapped stop exists for code ${stopCode}.`);
-      }
-
-      const campusServiceNos = stopMeta.services.filter((serviceNo) =>
-        CAMPUS_SHUTTLE_SERVICES.includes(serviceNo)
-      );
-
-      const [publicStopResponse, campusArrivalsByService] = await Promise.all([
-        (async () => {
-          try {
-            return await getPublicStopLiveResponse(stopMeta);
-          } catch {
-            return { services: [] };
-          }
-        })(),
-        campusServiceNos.length
-          ? (async () => {
-              try {
-                const campusVehicles = await collectCampusVehicles(dataset);
-                return estimateCampusStopArrivals(stopMeta, dataset, campusVehicles);
-              } catch {
-                return new Map();
-              }
-            })()
-          : Promise.resolve(new Map())
-      ]);
-
-      const publicLookup = new Map(
-        (publicStopResponse.services || []).map((service) => [service.serviceNo, service])
-      );
-
-      res.json({
-        stop: {
-          code: stopMeta.code,
-          name: stopMeta.name,
-          roadName: stopMeta.roadName,
-          services: stopMeta.services
-        },
-        services: stopMeta.services.map((serviceNo) => {
-          const serviceMeta = dataset.services?.[serviceNo] || {};
-          const livePublicService = publicLookup.get(serviceNo);
-          const isCampusService = CAMPUS_SHUTTLE_SERVICES.includes(serviceNo);
-          const livePublicArrivals = Array.isArray(livePublicService?.upcomingBuses)
-            ? livePublicService.upcomingBuses.map((bus) => ({
-                minutes: bus.minutes,
-                estimatedArrival: bus.estimatedArrival,
-                visitNumber: bus.visitNumber
-              }))
-            : [];
-          const arrivals = isCampusService
-            ? campusArrivalsByService.get(serviceNo) || []
-            : livePublicArrivals;
-
-          return {
-            serviceNo,
-            shortLabel: serviceMeta.shortLabel || serviceNo,
-            title: serviceMeta.title || serviceNo,
-            color: serviceMeta.color || SERVICE_COLORS[serviceNo] || "#8b5cf6",
-            operates: serviceMeta.operates || (isCampusService ? "Campus shuttle" : "Public bus"),
-            isCampusService,
-            availability:
-              arrivals.length > 0
-                ? isCampusService
-                  ? "estimated"
-                  : "live"
-                : "no-estimate",
-            arrivals
-          };
-        })
-      });
+      const stopCode = String(req.params.stopCode || req.query.stopCode || "").trim();
+      await sendStopArrivalsResponse(res, stopCode);
     } catch (error) {
       handleApiError(res, error);
     }
+  };
+
+  app.get("/api/map/stop-arrivals", handleStopArrivalsRequest);
+  app.get("/api/map/stops/:stopCode/arrivals", handleStopArrivalsRequest);
+}
+
+async function sendTutorialRoomDirectionsResponse(res, query) {
+  const roomId = String(query.roomId || "").trim();
+  const fromLat = Number(query.fromLat);
+  const fromLng = Number(query.fromLng);
+  const dataset = await getTutorialRoomsDataset();
+  const room = dataset.rooms.find((room) => room.id === roomId);
+
+  if (!room) {
+    throw new ApiError(404, `No tutorial room exists for id ${roomId}.`);
+  }
+
+  if (!Number.isFinite(fromLat) || !Number.isFinite(fromLng)) {
+    throw new ApiError(400, "fromLat and fromLng are required for directions.");
+  }
+
+  const distanceMeters = getDistanceMeters(fromLat, fromLng, room.lat, room.lng);
+  const durationSeconds = Math.max(
+    Math.round(distanceMeters / WALKING_SPEED_METERS_PER_SECOND),
+    30
+  );
+
+  res.json({
+    ok: true,
+    source: dataset.source,
+    provider: "straight-line-campus-walk",
+    distanceMeters: Math.round(distanceMeters),
+    durationSeconds,
+    geometry: [
+      {
+        lat: fromLat,
+        lng: fromLng
+      },
+      {
+        lat: room.lat,
+        lng: room.lng
+      }
+    ],
+    room,
+    mazeMapNavigationUrl: getMazeMapNavigationUrl(room, {
+      lat: fromLat,
+      lng: fromLng,
+      zLevel: 0
+    }),
+    mazeMapUrl: room.mazeMapUrl || getMazeMapPoiUrl(room),
+    googleMapsUrl: getGoogleMapsDirectionsUrl({ lat: fromLat, lng: fromLng }, room)
+  });
+}
+
+async function sendStopArrivalsResponse(res, stopCode) {
+  if (!stopCode) {
+    throw new ApiError(400, "stopCode is required.");
+  }
+
+  const dataset = await getRouteDataset();
+  const stopMeta = dataset.stopLookup[stopCode];
+
+  if (!stopMeta) {
+    throw new ApiError(404, `No mapped stop exists for code ${stopCode}.`);
+  }
+
+  const campusServiceNos = stopMeta.services.filter((serviceNo) =>
+    CAMPUS_SHUTTLE_SERVICES.includes(serviceNo)
+  );
+
+  const [publicStopResponse, campusArrivalsByService] = await Promise.all([
+    (async () => {
+      try {
+        return await getPublicStopLiveResponse(stopMeta);
+      } catch {
+        return { services: [] };
+      }
+    })(),
+    campusServiceNos.length
+      ? (async () => {
+          try {
+            const campusVehicles = await collectCampusVehicles(dataset);
+            return estimateCampusStopArrivals(stopMeta, dataset, campusVehicles);
+          } catch {
+            return new Map();
+          }
+        })()
+      : Promise.resolve(new Map())
+  ]);
+
+  const publicLookup = new Map(
+    (publicStopResponse.services || []).map((service) => [service.serviceNo, service])
+  );
+
+  res.json({
+    stop: {
+      code: stopMeta.code,
+      name: stopMeta.name,
+      roadName: stopMeta.roadName,
+      services: stopMeta.services
+    },
+    services: stopMeta.services.map((serviceNo) => {
+      const serviceMeta = dataset.services?.[serviceNo] || {};
+      const livePublicService = publicLookup.get(serviceNo);
+      const isCampusService = CAMPUS_SHUTTLE_SERVICES.includes(serviceNo);
+      const livePublicArrivals = Array.isArray(livePublicService?.upcomingBuses)
+        ? livePublicService.upcomingBuses.map((bus) => ({
+            minutes: bus.minutes,
+            estimatedArrival: bus.estimatedArrival,
+            visitNumber: bus.visitNumber
+          }))
+        : [];
+      const arrivals = isCampusService
+        ? campusArrivalsByService.get(serviceNo) || []
+        : livePublicArrivals;
+
+      return {
+        serviceNo,
+        shortLabel: serviceMeta.shortLabel || serviceNo,
+        title: serviceMeta.title || serviceNo,
+        color: serviceMeta.color || SERVICE_COLORS[serviceNo] || "#8b5cf6",
+        operates: serviceMeta.operates || (isCampusService ? "Campus shuttle" : "Public bus"),
+        isCampusService,
+        availability:
+          arrivals.length > 0 ? (isCampusService ? "estimated" : "live") : "no-estimate",
+        arrivals
+      };
+    })
   });
 }
 

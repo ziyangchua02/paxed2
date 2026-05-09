@@ -269,7 +269,7 @@ const updateRoomDirections = async (room) => {
   });
 
   try {
-    const route = await fetchJson(`/api/map/tutorial-rooms/directions?${query.toString()}`);
+    const route = await fetchJson(`/api/map/tutorial-room-directions?${query.toString()}`);
 
     if (requestSequence !== directionsSequence) {
       return;

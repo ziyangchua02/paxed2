@@ -109,6 +109,16 @@ test("GET /api/map/vehicles advertises campus shuttle services", async () => {
   }
 });
 
+test("GET /api/map/stop-arrivals returns production-safe stop timing data", async () => {
+  const response = await fetch(`${baseUrl}/api/map/stop-arrivals?stopCode=27251`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.stop.code, "27251");
+  assert.equal(Array.isArray(payload.services), true);
+  assert.equal(payload.services.some((service) => service.serviceNo === "179"), true);
+});
+
 test("GET /api/map/tutorial-rooms returns MazeMap-backed room map data", async () => {
   const response = await fetch(`${baseUrl}/api/map/tutorial-rooms`);
   const payload = await response.json();
@@ -133,12 +143,12 @@ test("GET /api/map/tutorial-rooms returns MazeMap-backed room map data", async (
   assert.match(sampleRoom.mazeMapNavigationUrl, /desttype=/);
 });
 
-test("GET /api/map/tutorial-rooms/directions returns walking route to a tutorial room", async () => {
+test("GET /api/map/tutorial-room-directions returns walking route to a tutorial room", async () => {
   const roomsResponse = await fetch(`${baseUrl}/api/map/tutorial-rooms`);
   const roomsPayload = await roomsResponse.json();
   const roomId = encodeURIComponent(roomsPayload.rooms[0].id);
   const response = await fetch(
-    `${baseUrl}/api/map/tutorial-rooms/directions?roomId=${roomId}&fromLat=1.345640&fromLng=103.680780`
+    `${baseUrl}/api/map/tutorial-room-directions?roomId=${roomId}&fromLat=1.345640&fromLng=103.680780`
   );
   const payload = await response.json();
 

@@ -1134,8 +1134,11 @@ const fetchStopArrivals = async (stopCode) => {
     return cachedEntry.promise;
   }
 
+  const query = new URLSearchParams({
+    stopCode
+  });
   let request = null;
-  request = fetchJson(`/api/map/stops/${encodeURIComponent(stopCode)}/arrivals`)
+  request = fetchJson(`/api/map/stop-arrivals?${query.toString()}`)
     .then((payload) => {
       stopArrivalCache.set(stopCode, {
         payload,
