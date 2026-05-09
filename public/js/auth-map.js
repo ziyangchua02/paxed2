@@ -8,6 +8,7 @@ const MIN_HEADING_MOVEMENT_METERS = 6;
 const USER_LOCATION_MAX_AGE_MS = 60_000;
 const USER_LOCATION_TIMEOUT_MS = 9_000;
 const INITIAL_VISIBLE_SERVICE_LIMIT = 4;
+const DEFAULT_CAMPUS_SHUTTLE_SERVICES = ["CL-B", "CL-R", "CR", "CWR"];
 
 let map = null;
 let routeLayerGroup = null;
@@ -386,16 +387,21 @@ const applyInitialNearestServiceSelection = (
     return;
   }
 
+  const defaultCampusShuttleServiceNos = DEFAULT_CAMPUS_SHUTTLE_SERVICES.filter(
+    (serviceNo) => routeDataset.services?.[serviceNo]
+  );
   const nearestServiceNos = getNearestServiceSummaries(referenceCenter)
     .filter((summary) => summary.nearestStop)
-    .slice(0, INITIAL_VISIBLE_SERVICE_LIMIT)
     .map((summary) => summary.serviceNo);
+  const selectedServiceNos = [
+    ...new Set([...defaultCampusShuttleServiceNos, ...nearestServiceNos])
+  ].slice(0, INITIAL_VISIBLE_SERVICE_LIMIT);
 
-  if (!nearestServiceNos.length) {
+  if (!selectedServiceNos.length) {
     return;
   }
 
-  visibleServices = new Set(nearestServiceNos);
+  visibleServices = new Set(selectedServiceNos);
   hasAppliedInitialNearestServiceSelection = true;
 
   if (syncMap && routeLayerGroup && stopLayerGroup && vehicleLayerGroup) {

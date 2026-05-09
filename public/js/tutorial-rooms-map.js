@@ -387,7 +387,7 @@ const resyncRoomsMapLayout = () => {
 };
 
 const initializeRoomsMap = async () => {
-  if (!roomsSectionElement) {
+  if (!roomsSectionElement || !roomsMapElement) {
     return;
   }
 
@@ -397,13 +397,20 @@ const initializeRoomsMap = async () => {
   }
 
   try {
+    setupRoomsInteractions();
+    syncEmbeddedMazeMap(null);
+
+    if (!roomsListElement && !roomsDetailsElement) {
+      roomsMapInitialized = true;
+      resyncRoomsMapLayout();
+      return;
+    }
+
     const payload = await fetchJson("/api/map/tutorial-rooms");
 
     roomsDataset = Array.isArray(payload?.rooms) ? payload.rooms : [];
     selectedRoomId = "";
 
-    setupRoomsInteractions();
-    syncEmbeddedMazeMap(null);
     renderRoomList();
     renderDetails(null);
     roomsMapInitialized = true;

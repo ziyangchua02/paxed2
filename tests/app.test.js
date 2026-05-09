@@ -80,6 +80,35 @@ test("GET /api/map/health returns map API status", async () => {
   assert.equal(typeof payload.tutorialRooms, "number");
 });
 
+test("GET /api/map/routes includes NTU campus shuttle loops", async () => {
+  const response = await fetch(`${baseUrl}/api/map/routes`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+
+  for (const serviceNo of ["CL-B", "CL-R"]) {
+    const service = payload.services?.[serviceNo];
+
+    assert.equal(typeof service?.title, "string");
+    assert.equal(Array.isArray(service?.directions?.[0]?.path), true);
+    assert.equal(service.directions[0].path.length > 1, true);
+    assert.equal(Array.isArray(service.directions[0].stops), true);
+    assert.equal(service.directions[0].stops.length > 1, true);
+  }
+});
+
+test("GET /api/map/vehicles advertises campus shuttle services", async () => {
+  const response = await fetch(`${baseUrl}/api/map/vehicles`);
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(Array.isArray(payload.services), true);
+
+  for (const serviceNo of ["CL-B", "CL-R", "CR", "CWR"]) {
+    assert.equal(payload.services.includes(serviceNo), true);
+  }
+});
+
 test("GET /api/map/tutorial-rooms returns MazeMap-backed room map data", async () => {
   const response = await fetch(`${baseUrl}/api/map/tutorial-rooms`);
   const payload = await response.json();

@@ -86,8 +86,11 @@ const CAMPUS_OMNIBUS_ROUTE_MAP = {
   }
 };
 
-const NTU_OMNIBUS_API = {
-  activeBusServicesData: "ZqTN65XW1uKLZ0T8NTg0jw"
+const NTU_OMNIBUS_ACTIVE_BUS_PATH =
+  "/screenservices/CampusShuttle_MUI/MainFlow/RenderMap/DataActionGetActiveBusServicesData";
+const NTU_OMNIBUS_ACTIVE_BUS_SCRIPT = "CampusShuttle_MUI.MainFlow.RenderMap.mvc.js";
+const NTU_OMNIBUS_API_FALLBACK = {
+  activeBusServicesData: "X18_TOlljR63ZC0gtWKItg"
 };
 
 const NTU_OMNIBUS_CLIENT_VARIABLES = {
@@ -116,6 +119,12 @@ const tutorialRoomCache = {
 
 const ntuOmnibusModuleVersionCache = {
   value: null,
+  fetchedAt: 0,
+  pending: null
+};
+
+const ntuOmnibusApiVersionCache = {
+  activeBusServicesData: null,
   fetchedAt: 0,
   pending: null
 };
@@ -1931,11 +1940,31 @@ async function fetchCampusOmnibusVehicles(serviceNo) {
     throw new ApiError(500, `No NTU Omnibus mapping is defined for ${serviceNo}.`);
   }
 
-  return fetchNtuOmnibusJson(
-    "/screenservices/CampusShuttle_MUI/MainFlow/RenderMap/DataActionGetActiveBusServicesData",
-    NTU_OMNIBUS_API.activeBusServicesData,
-    buildCampusOmnibusRoutePayload(serviceNo)
-  );
+  const requestBody = buildCampusOmnibusRoutePayload(serviceNo);
+  let apiVersion = await getNtuOmnibusActiveBusApiVersion();
+  let payload = await fetchNtuOmnibusJson(NTU_OMNIBUS_ACTIVE_BUS_PATH, apiVersion, requestBody, {
+    retry: false
+  });
+  const versionInfo = payload?.versionInfo || {};
+
+  if (versionInfo.hasModuleVersionChanged || versionInfo.hasApiVersionChanged) {
+    if (versionInfo.hasModuleVersionChanged) {
+      ntuOmnibusModuleVersionCache.value = null;
+      ntuOmnibusModuleVersionCache.fetchedAt = 0;
+    }
+
+    if (versionInfo.hasApiVersionChanged) {
+      ntuOmnibusApiVersionCache.activeBusServicesData = null;
+      ntuOmnibusApiVersionCache.fetchedAt = 0;
+      apiVersion = await getNtuOmnibusActiveBusApiVersion({ force: true });
+    }
+
+    payload = await fetchNtuOmnibusJson(NTU_OMNIBUS_ACTIVE_BUS_PATH, apiVersion, requestBody, {
+      retry: false
+    });
+  }
+
+  return payload;
 }
 
 function buildCampusOmnibusRoutePayload(serviceNo) {
@@ -2039,6 +2068,143 @@ async function getNtuOmnibusModuleVersion() {
     });
 
   return ntuOmnibusModuleVersionCache.pending;
+}
+
+async function getNtuOmnibusActiveBusApiVersion({ force = false } = {}) {
+  const cacheAge = Date.now() - ntuOmnibusApiVersionCache.fetchedAt;
+
+  if (
+    !force &&
+    ntuOmnibusApiVersionCache.activeBusServicesData &&
+    cacheAge < NTU_OMNIBUS_MODULE_VERSION_TTL_MS
+  ) {
+    return ntuOmnibusApiVersionCache.activeBusServicesData;
+  }
+
+  if (!force && ntuOmnibusApiVersionCache.pending) {
+    return ntuOmnibusApiVersionCache.pending;
+  }
+
+  ntuOmnibusApiVersionCache.pending = fetchNtuOmnibusActiveBusApiVersion()
+    .catch(() => NTU_OMNIBUS_API_FALLBACK.activeBusServicesData)
+    .then((apiVersion) => {
+      ntuOmnibusApiVersionCache.activeBusServicesData = apiVersion;
+      ntuOmnibusApiVersionCache.fetchedAt = Date.now();
+      return apiVersion;
+    })
+    .finally(() => {
+      ntuOmnibusApiVersionCache.pending = null;
+    });
+
+  return ntuOmnibusApiVersionCache.pending;
+}
+
+async function fetchNtuOmnibusActiveBusApiVersion() {
+  let response;
+
+  try {
+    response = await fetch(resolveNtuOmnibusUrl(""), {
+      headers: {
+        Accept: "text/html"
+      },
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
+  } catch (error) {
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      throw new ApiError(504, "NTU Omnibus app metadata took too long to respond.");
+    }
+
+    throw new ApiError(502, "NTU Omnibus app metadata could not be reached.", String(error));
+  }
+
+  if (!response.ok) {
+    throw new ApiError(502, "NTU Omnibus app metadata could not be loaded.");
+  }
+
+  const html = await response.text();
+  const indexVersionToken = String(
+    html.match(/OSManifestLoader\.indexVersionToken\s*=\s*"([^"]+)"/)?.[1] || ""
+  ).trim();
+
+  if (!indexVersionToken) {
+    throw new ApiError(502, "NTU Omnibus did not expose an app index version token.");
+  }
+
+  const manifest = await fetchNtuOmnibusManifest(indexVersionToken);
+  const [scriptPath, scriptVersion = ""] =
+    Object.entries(manifest?.urlVersions || {}).find(([pathname]) =>
+      String(pathname).endsWith(`/scripts/${NTU_OMNIBUS_ACTIVE_BUS_SCRIPT}`)
+    ) || [];
+
+  if (!scriptPath) {
+    throw new ApiError(502, "NTU Omnibus campus shuttle script metadata was unavailable.");
+  }
+
+  const scriptUrl = new URL(`${scriptPath}${scriptVersion}`, NTU_OMNIBUS_BASE_URL);
+  const scriptText = await fetchNtuOmnibusScript(scriptUrl);
+  const apiVersion = String(
+    scriptText.match(
+      /DataActionGetActiveBusServicesData",\s*"screenservices\/CampusShuttle_MUI\/MainFlow\/RenderMap\/DataActionGetActiveBusServicesData",\s*"([^"]+)"/
+    )?.[1] || ""
+  ).trim();
+
+  if (!apiVersion) {
+    throw new ApiError(502, "NTU Omnibus did not expose a campus shuttle API version.");
+  }
+
+  return apiVersion;
+}
+
+async function fetchNtuOmnibusManifest(indexVersionToken) {
+  const url = resolveNtuOmnibusUrl(`moduleservices/moduleinfo?${indexVersionToken}`);
+  let response;
+
+  try {
+    response = await fetch(url, {
+      headers: {
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
+  } catch (error) {
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      throw new ApiError(504, "NTU Omnibus manifest took too long to respond.");
+    }
+
+    throw new ApiError(502, "NTU Omnibus manifest could not be reached.", String(error));
+  }
+
+  if (!response.ok) {
+    throw new ApiError(502, "NTU Omnibus manifest could not be loaded.");
+  }
+
+  const payload = await response.json();
+  return payload?.manifest || {};
+}
+
+async function fetchNtuOmnibusScript(url) {
+  let response;
+
+  try {
+    response = await fetch(url, {
+      headers: {
+        Accept: "application/javascript, text/javascript, */*"
+      },
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
+  } catch (error) {
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      throw new ApiError(504, "NTU Omnibus campus shuttle script took too long to respond.");
+    }
+
+    throw new ApiError(502, "NTU Omnibus campus shuttle script could not be reached.", String(error));
+  }
+
+  if (!response.ok) {
+    throw new ApiError(502, "NTU Omnibus campus shuttle script could not be loaded.");
+  }
+
+  return response.text();
 }
 
 async function fetchNtuOmnibusModuleVersion() {
