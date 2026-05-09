@@ -1238,6 +1238,79 @@ async function collectCampusVehicles(dataset) {
   return campusVehicles.flat();
 }
 
+function getLatLngAtDistance(routeMetrics, distanceMeters) {
+  const path = routeMetrics?.path || [];
+  const cumulative = routeMetrics?.cumulativeDistances || [];
+
+  if (!path.length || !Number.isFinite(distanceMeters)) {
+    return null;
+  }
+
+  const total = routeMetrics.totalDistance || 0;
+  let d = distanceMeters;
+
+  // Wrap around if beyond total distance
+  if (d < 0) d = 0;
+  if (total > 0) d = d % total;
+
+  for (let i = 0; i < path.length - 1; i += 1) {
+    const startD = cumulative[i] || 0;
+    const endD = cumulative[i + 1] || startD;
+
+    if (d >= startD && d <= endD) {
+      const t = endD === startD ? 0 : (d - startD) / (endD - startD);
+      const [latA, lngA] = path[i];
+      const [latB, lngB] = path[i + 1];
+      const lat = latA + (latB - latA) * t;
+      const lng = lngA + (lngB - lngA) * t;
+      return { lat, lng };
+    }
+  }
+
+  // Fallback to last point
+  const last = path[path.length - 1];
+  return last ? { lat: last[0], lng: last[1] } : null;
+}
+
+function generateEstimatedCampusVehicles(serviceNo, service, routeMetrics) {
+  const route = service?.directions?.[0];
+
+  if (!route || !routeMetrics || !Number.isFinite(routeMetrics.totalDistance) || routeMetrics.totalDistance <= 0) {
+    return [];
+  }
+
+  const cycleMinutes = getCampusRouteCycleMinutes(route, routeMetrics) || 0;
+  // Assume an approximate headway (minutes) when upstream is missing
+  const assumedHeadwayMinutes = 8;
+  const vehicleCount = Math.max(1, Math.round(Math.max(cycleMinutes, assumedHeadwayMinutes) / assumedHeadwayMinutes));
+
+  const vehicles = [];
+
+  for (let i = 0; i < vehicleCount; i += 1) {
+    const progressFraction = i / vehicleCount;
+    const distanceAlong = (routeMetrics.totalDistance || 0) * progressFraction;
+    const point = getLatLngAtDistance(routeMetrics, distanceAlong);
+
+    if (!point) continue;
+
+    vehicles.push({
+      Lat: point.lat,
+      Lng: point.lng,
+      Speed: null,
+      LoadInfo: {
+        CrowdLevel: null,
+        Occupancy: null,
+        Capacity: null,
+        Ridership: null
+      },
+      Vehplate: null,
+      Direction: null
+    });
+  }
+
+  return vehicles;
+}
+
 function normalizeCampusVehicle(serviceNo, vehicle, dataset, routeMetrics) {
   const lat = Number(vehicle?.Lat);
   const lng = Number(vehicle?.Lng);
